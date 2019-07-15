@@ -1,0 +1,32 @@
+Package: opticskxi
+Title: OPTICS K-Xi Density-Based Clustering
+Version: 0.1
+Author: Thomas Charlon <charlon@protonmail.com>
+Maintainer: Thomas Charlon <charlon@protonmail.com>
+Description: Provides a novel density-based cluster extraction method, OPTICS k-Xi, and a framework to compare k-Xi models using distance-based metrics to investigate datasets with unknown number of clusters.
+Imports:
+    ggplot2,
+    magrittr
+Depends:
+    R (>= 2.15)
+Suggests:
+    amap,
+    dbscan,
+    cowplot,
+    fastICA,
+    fpc,
+    ggrepel,
+    grid,
+    grDevices,
+    gtable,
+    knitr,
+    parallel,
+    plyr,
+    reshape2,
+    stats,
+    testthat,
+    utils
+VignetteBuilder: knitr
+License: GPL-3 | file LICENSE
+Encoding: UTF-8
+RoxygenNote: 6.1.1

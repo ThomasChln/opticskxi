@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  kxi_vignette:
+    image: thomaschln/opticskxi
+    volumes:
+      - ./:/opticskxi/
+    working_dir: /opticskxi/vignettes/
+    command: R -e "Sweave('opticskxi.Rnw');tinytex::latexmk('opticskxi.tex')"
