@@ -71,7 +71,7 @@ Compare multiple k-Xi models in dataset with unknown number of clusters and visu
      ggpairs('Clusters', ellipses = TRUE, variables = TRUE)
 ```
 
-See the vignette for results and further details.
+See the [vignette](https://cran.r-project.org/web/packages/opticskxi/vignettes/opticskxi.pdf) for results and further details.
 
 ## Acknowledgements
 
