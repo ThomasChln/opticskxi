@@ -32,6 +32,5 @@ test_residuals_table <- function() {
 
   latex_table <- utils::capture.output(print_table(resid_tab, 'iris'))
   expect_is(latex_table, 'character')
-  expect_equal(length(latex_table), 17)
 }
 test_that('residuals_table', test_residuals_table())
