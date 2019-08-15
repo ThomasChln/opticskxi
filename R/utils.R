@@ -32,7 +32,7 @@ print_table <- function(table_obj, label) {
 residuals_table <- function(...) {
   stats::chisq.test(...)$stdres %>%
     `colnames<-`(paste('Residuals:', colnames(.))) %>% round(2) %>%
-    rbind(matrix(NA, 2, 2)) %>% cbind(contingency_table(...), .)
+    rbind(matrix(NA, 2, ncol(.))) %>% cbind(contingency_table(...), .)
 }
 
 #' Contingency table

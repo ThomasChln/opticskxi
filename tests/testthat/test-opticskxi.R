@@ -15,8 +15,9 @@ test_opticskxi_pipeline <- function() {
 }
 test_that('opticskxi_pipeline', test_opticskxi_pipeline())
 
+best_kxi <- get_best_kxi(kxi, 'bw.ratio')
+
 test_get_best_kxi <- function() {
-  best_kxi <- get_best_kxi(kxi, 'bw.ratio')
   expect_equal(as.vector(table(best_kxi$clusters)), c(28, 49, 72),
     check.attributes = FALSE)
 
@@ -24,3 +25,13 @@ test_get_best_kxi <- function() {
   expect_equal(as.vector(table(best_kxi$clusters)), c(100, 49))
 }
 test_that('get_best_kxi', test_get_best_kxi())
+
+test_residuals_table <- function() {
+  resid_tab <- residuals_table(best_kxi$clusters, iris$Species)
+  expect_is(resid_tab, 'matrix')
+
+  latex_table <- utils::capture.output(print_table(resid_tab, 'iris'))
+  expect_is(latex_table, 'character')
+  expect_equal(length(latex_table), 17)
+}
+test_that('residuals_table', test_residuals_table())
