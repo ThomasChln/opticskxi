@@ -4,10 +4,13 @@
 \alias{opticskxi_pipeline}
 \title{OPTICS k-Xi models comparison pipeline}
 \usage{
-opticskxi_pipeline(m_data, df_params = expand.grid(n_xi = 1:10, pts =
-  c(20, 30, 40), dist = c("euclidean", "abscorrelation"), dim_red =
-  c("identity", "PCA", "ICA"), n_dimred_comp = c(5, 10, 20)),
-  n_cores = 1)
+opticskxi_pipeline(
+  m_data,
+  df_params = expand.grid(n_xi = 1:10, pts = c(20, 30, 40), dist = c("euclidean",
+    "abscorrelation"), dim_red = c("identity", "PCA", "ICA"), n_dimred_comp = c(5, 10,
+    20)),
+  n_cores = 1
+)
 }
 \arguments{
 \item{m_data}{Data matrix}

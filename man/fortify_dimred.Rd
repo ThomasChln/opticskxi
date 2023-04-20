@@ -4,8 +4,13 @@
 \alias{fortify_dimred}
 \title{Fortify a dimension reduction object}
 \usage{
-fortify_dimred(m_dimred, m_vars = NULL, v_variance = NULL,
-  sup_vars = NULL, var_digits = 1)
+fortify_dimred(
+  m_dimred,
+  m_vars = NULL,
+  v_variance = NULL,
+  sup_vars = NULL,
+  var_digits = 1
+)
 }
 \arguments{
 \item{m_dimred}{Projection matrix}

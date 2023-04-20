@@ -26,7 +26,7 @@ Stable CRAN version, in R:
 Development version, using the devtools package in R:
 
 ```r
-  devtools::install_git('https://framagit.org/thomaschln/opticskxi.git')
+  devtools::install_git('https://gitlab.com/thomaschln/opticskxi.git')
 ```
 
 ## Usage
@@ -83,3 +83,7 @@ This work was inspired by Jérôme Wojcik (Precision for Medicine) and Sviatosla
 ## License
 
 This package is free and open source software, licensed under GPL-3.
+
+## Citations
+
+This package has 4 citations on [Google scholar](https://scholar.google.com/scholar?oi=bibs&hl=en&cites=16168867266574784239&as_sdt=5) (April 2023)

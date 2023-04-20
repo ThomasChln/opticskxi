@@ -4,8 +4,12 @@
 \alias{ggplot_optics}
 \title{Ggplot optics}
 \usage{
-ggplot_optics(optics_obj, groups = NULL, colors = if (!is.null(groups))
-  nice_palette(groups), segment_size = 300/nrow(df_optics))
+ggplot_optics(
+  optics_obj,
+  groups = NULL,
+  colors = if (!is.null(groups)) nice_palette(groups),
+  segment_size = 300/nrow(df_optics)
+)
 }
 \arguments{
 \item{optics_obj}{dbscan::optics object}

@@ -3,7 +3,7 @@ PKGNAME := $(shell sed -n "s/Package: *\([^ ]*\)/\1/p" DESCRIPTION)
 PKGVERS := $(shell sed -n "s/Version: *\([^ ]*\)/\1/p" DESCRIPTION)
 PKGSRC  := $(shell basename `pwd`)
 
-all: check clean
+all: clean devtools_check
 
 doc.pdf:
 	R CMD Rd2pdf -o doc.pdf .
@@ -24,10 +24,14 @@ check: build-cran
 	cd ..;\
 	R CMD check $(PKGNAME)_$(PKGVERS).tar.gz --as-cran
 
-clean:
-	cd ..;\
-	$(RM) -r $(PKGNAME).Rcheck/
+devtools_check:
+	R -e "devtools::check()"
 
-clean_vignette:
+vignette:
 	cd vignettes;\
-	$(RM) *.pdf *.aux *.bbl *.blg *.out *.tex
+	R -e "Sweave('opticskxi.Rnw');tools::texi2pdf('opticskxi.tex')"
+
+clean:
+	$(RM) doc.pdf
+	cd vignettes;\
+	$(RM) *.pdf *.aux *.bbl *.blg *.out *.tex *.log

@@ -4,9 +4,17 @@
 \alias{ggpairs}
 \title{Plot multiple axes of a data frame or a fortified dimension reduction.}
 \usage{
-ggpairs(df_data, group = NULL, axes = 1:2, variables = FALSE,
-  n_vars = 0, ellipses = FALSE, ..., title = NULL, colors = if
-  (!is.null(group)) nice_palette(df_data[[group]]))
+ggpairs(
+  df_data,
+  group = NULL,
+  axes = 1:2,
+  variables = FALSE,
+  n_vars = 0,
+  ellipses = FALSE,
+  ...,
+  title = NULL,
+  colors = if (!is.null(group)) nice_palette(df_data[[group]])
+)
 }
 \arguments{
 \item{df_data}{Data frame}

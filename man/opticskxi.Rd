@@ -4,8 +4,13 @@
 \alias{opticskxi}
 \title{OPTICS k-Xi clustering algorithm}
 \usage{
-opticskxi(optics_obj, n_xi, pts = optics_obj$minPts, max_loop = 50,
-  verbose = FALSE)
+opticskxi(
+  optics_obj,
+  n_xi,
+  pts = optics_obj$minPts,
+  max_loop = 50,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{optics_obj}{Data frame returned by optics}

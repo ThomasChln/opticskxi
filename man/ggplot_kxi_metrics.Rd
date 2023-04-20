@@ -4,8 +4,7 @@
 \alias{ggplot_kxi_metrics}
 \title{Ggplot OPTICS k-Xi metrics}
 \usage{
-ggplot_kxi_metrics(df_kxi, metric = c("avg.silwidth", "bw.ratio"),
-  n = 8)
+ggplot_kxi_metrics(df_kxi, metric = c("avg.silwidth", "bw.ratio"), n = 8)
 }
 \arguments{
 \item{df_kxi}{Data frame returned by opticskxi_pipeline}
