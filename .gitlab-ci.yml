@@ -1,0 +1,10 @@
+image: docker:stable
+
+services:
+  - docker:dind
+
+run_check:
+  script:
+    - docker build -t opticskxi ./
+    - docker run --rm -w /opticskxi -t opticskxi R -e "devtools::check()"
+    - docker run --rm -w /opticskxi -t opticskxi R -e "install.packages('covr');covr::codecov(token = '$CODECOV_TOKEN')"
