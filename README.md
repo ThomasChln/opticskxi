@@ -1,7 +1,8 @@
 # OPTICS k-Xi
 
 [![CRAN version](http://www.r-pkg.org/badges/version/opticskxi)](https://cran.r-project.org/package=opticskxi)
-[![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/opticskxi)](https://cran.r-project.org/package=opticskxi)
+[![CRAN total downloads](http://cranlogs.r-pkg.org/badges/grand-total/opticskxi)](https://cran.r-project.org/package=opticskxi)
+[![CRAN monthly downloads](http://cranlogs.r-pkg.org/badges/opticskxi)](https://cran.r-project.org/package=opticskxi)
 [![codecov](https://codecov.io/gh/ThomasChln/opticskxi/branch/master/graph/badge.svg?token=cG0cbdvvOB)](https://codecov.io/gh/ThomasChln/opticskxi)
 
 This R package provides a novel cluster extraction method for the OPTICS algorithm, OPTICS k-Xi, along with ggplot2 visualizations and a framework to compare clustering models with varying parameters using distance-based metrics.
