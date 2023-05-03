@@ -26,6 +26,8 @@ Suggests:
     testthat,
     utils
 VignetteBuilder: knitr
-License: GPL-3 | file LICENSE
+License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.2.3
+URL: https://gitlab.com/thomaschln/opticskxi
+BugReports: https://gitlab.com/thomaschln/opticskxi/-/issues
