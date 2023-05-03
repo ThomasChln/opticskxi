@@ -1,5 +1,5 @@
 .git
-.travis.yml
+.gitlab-ci.yml
 docker-compose.yml
 Dockerfile
 Makefile
