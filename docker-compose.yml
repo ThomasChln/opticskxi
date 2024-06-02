@@ -13,9 +13,27 @@ services:
       - ./:/opticskxi/
     working_dir: /opticskxi
     command: make vignette
+  build_doc:
+    build: ./
+    volumes:
+      - ./:/opticskxi/
+    working_dir: /opticskxi/
+    command: make roxygenise
+  pkg_test:
+    build: ./
+    volumes:
+      - ./:/opticskxi/
+    working_dir: /opticskxi/
+    command: make devtools_test
   pkg_check:
     build: ./
     volumes:
       - ./:/opticskxi/
     working_dir: /opticskxi/
-    command: make
+    command: make devtools_check
+  pkg_submit:
+    build: ./
+    volumes:
+      - ./:/opticskxi/
+    working_dir: /opticskxi/
+    command: make submit

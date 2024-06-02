@@ -2,6 +2,8 @@
 #'                     element_text facet_grid facet_wrap geom_point
 #'                     geom_segment ggplot ggplotGrob guides guide_legend
 #'                     labs scale_color_manual stat_ellipse theme theme_bw 
+#' @importFrom stats as.dist median na.omit setNames
+#' @importFrom utils tail
 #' @importFrom magrittr %>% %<>% %$%
 NULL
 

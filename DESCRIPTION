@@ -1,6 +1,6 @@
 Package: opticskxi
 Title: OPTICS K-Xi Density-Based Clustering
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: person("Thomas", "Charlon", role = c("aut", "cre"), email = "charlon@protonmail.com", comment = c(ORCID = "0000-0001-7497-0470"))
 Description: Provides a novel density-based cluster extraction method, OPTICS k-Xi, and a framework to compare k-Xi models using distance-based metrics to investigate datasets with unknown number of clusters.
 Imports:
@@ -24,10 +24,11 @@ Suggests:
     reshape2,
     stats,
     testthat,
+    text2vec,
     utils
 VignetteBuilder: knitr
 License: GPL-3
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 URL: https://gitlab.com/thomaschln/opticskxi
 BugReports: https://gitlab.com/thomaschln/opticskxi/-/issues
