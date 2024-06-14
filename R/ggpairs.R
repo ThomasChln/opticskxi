@@ -35,8 +35,7 @@ ggpairs <- function(df_data, group = NULL, axes = 1:2, variables = FALSE,
   # order nas first to plot them underneath
   if (!is.null(group)) df_obs %<>% order_df_by_nas(group)
 
-  map <- list(x = 'x', y = 'y') %>% append(list(color = group)) %>%
-    do.call(aes_string, .)
+  map <- aes(.data$x, .data$y, color = if (!is.null(group)) .data[[group]])
   df_gg <- names(df_obs)[seq_along(axes)] %>% utils::combn(2) %>%
     apply(2, combine_axes, df_obs) %>%  do.call(rbind, .) %>%
     cbind(df_obs[group], row.names = NULL)
@@ -97,12 +96,13 @@ variables_layers <- function(df_data, axes, n_vars) {
     df_var <- df_var_subset
   }
 
-  map <- names(df_var) %>% { aes_string(xend = .[1], yend = .[2]) }
+  map_names <- names(df_var)
+  map <- aes(xend = .data[[map_names[1]]], yend = .data[[map_names[2]]])
   segments <- geom_segment(map, df_var, x = 0, y = 0, color = 'black',
     arrow = grid::arrow(length = grid::unit(0.03, "npc")))
 
-  map <- names(df_var) %>%
-    { aes_string(x = .[1], y = .[2], label = 'varname') }
+  map <- aes(x = .data[[map_names[1]]], y = .data[[map_names[2]]],
+             label = .data$varname)
   labels <- ggrepel::geom_label_repel(map, df_var, color = 'black',
     segment.color = 'grey50')
 

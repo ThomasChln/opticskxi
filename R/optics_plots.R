@@ -89,24 +89,27 @@ ggplot_optics <- function(optics_obj, groups = NULL,
   segment_size = 300 / nrow(df_optics)) {
 
   df_optics <- get_optics_df(optics_obj)
-  mapping <- list(x = 'optics_id', y = 'reachdist', xend = 'optics_id')
   if (!is.null(groups)) {
     groups %<>% factor
     groups[groups == 0] <- NA
     df_optics$Clusters <- groups[df_optics$id] %>% as.character
-    mapping <- append(mapping, list(color = 'Clusters'))
+    mapping <- aes(x = .data$optics_id, y = .data$reachdist,
+                   xend = .data$optics_id, color = .data$Clusters)
+  } else {
+    mapping <- aes(x = .data$optics_id, y = .data$reachdist,
+                   xend = .data$optics_id)
   }
   df_optics$reachdist[1] <- df_optics$coredist[1]
 
-  ggplot(df_optics, do.call(aes_string, mapping)) +
-    geom_segment(yend = 0, size = segment_size) +
+  ggplot(df_optics, mapping) +
+    geom_segment(yend = 0, linewidth = segment_size) +
     labs(x = 'Observations', y = 'Distance') +
     coord_cartesian(xlim = c(0, nrow(df_optics)), expand = FALSE) +
     theme_bw() + theme(panel.grid = element_blank(),
       strip.text = element_blank(), strip.background = element_blank()) +
     if (!is.null(groups)) {
       list(guides(color = guide_legend(ncol = 1 + (length(unique(groups)) > 5),
-            override.aes = list(size = 3))),
+            override.aes = list(linewidth = 3))),
         scale_color_manual(values = colors, na.value = grDevices::grey(.5)))
     }
 }

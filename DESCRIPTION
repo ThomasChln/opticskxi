@@ -5,7 +5,8 @@ Authors@R: person("Thomas", "Charlon", role = c("aut", "cre"), email = "charlon@
 Description: Provides a novel density-based cluster extraction method, OPTICS k-Xi, and a framework to compare k-Xi models using distance-based metrics to investigate datasets with unknown number of clusters.
 Imports:
     ggplot2,
-    magrittr
+    magrittr,
+    rlang
 Depends:
     R (>= 2.15)
 Suggests:
