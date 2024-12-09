@@ -5,7 +5,7 @@
 \alias{m_psychwords}
 \title{A dataset containing words by embeddings matrix}
 \format{
-A matrix with 800 words in rows and 100 embedding dimensions in
+A matrix with 799 words in rows and 100 embedding dimensions in
 columns.
 }
 \usage{
@@ -17,12 +17,5 @@ words, useful for demonstrating the use of the modified opticskxi pipeline
 psychkxi.
 }
 \details{
-The dataset contains 2 main hierarchical clusters (each has subclusters).
-}
-\examples{
-data('m_psychwords')
-df_params = expand.grid(n_xi = 9:10, pts = c(15, 20), dist = 'cosine',
-  dim_red = 'ICA', n_dimred_comp = c(10, 15))
-df_kxi = opticskxi:::psych_kxi_ensemble_models(m_psychwords, df_params)
-
+The dataset contains 2 main hierarchical clusters and each has subclusters.
 }
