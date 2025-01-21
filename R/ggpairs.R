@@ -24,6 +24,7 @@ ggpairs <- function(df_data, group = NULL, axes = 1:2, variables = FALSE,
   n_vars = 0, ellipses = FALSE, ..., title = NULL,
   colors = if (!is.null(group)) nice_palette(df_data[[group]])) {
 
+  df_data %<>% as.data.frame
   if (is.null(colors)) colors <- 'black'
   variables <- if (variables) variables_layers(df_data, axes, n_vars)
 
@@ -36,9 +37,11 @@ ggpairs <- function(df_data, group = NULL, axes = 1:2, variables = FALSE,
   if (!is.null(group)) df_obs %<>% order_df_by_nas(group)
 
   map <- aes(.data$x, .data$y, color = if (!is.null(group)) .data[[group]])
+
   df_gg <- names(df_obs)[seq_along(axes)] %>% utils::combn(2) %>%
-    apply(2, combine_axes, df_obs) %>%  do.call(rbind, .) %>%
+    apply(2, combine_axes, df_obs) %>% do.call(rbind, .) %>%
     cbind(df_obs[group], row.names = NULL)
+
   df_gg$axe1 %<>% factor(unique(.))
   df_gg$axe2 %<>% factor(unique(.))
 
@@ -46,6 +49,7 @@ ggpairs <- function(df_data, group = NULL, axes = 1:2, variables = FALSE,
     facet_grid(axe2 ~ axe1, scales = 'free') +
     labs(x = NULL, y = NULL, title = title) + theme_bw(12) +
     scale_color_manual(values = colors, na.value = grDevices::grey(.5)) +
+    guides(color = guide_legend(title = group)) +
     theme(panel.grid.minor = element_blank(), 
       strip.background = element_blank(),
       panel.spacing = grid::unit(1.5, 'mm')) +
@@ -64,23 +68,30 @@ ggpairs <- function(df_data, group = NULL, axes = 1:2, variables = FALSE,
 }
 
 order_df_by_nas <- function(df_obs, group) {
+
   df_obs[[group]] %<>% as.character
+
   if (any(is.na(df_obs[[group]]))) {
     nas <- df_obs[[group]] %>% is.na
     df_obs %<>% { rbind(subset(., nas), subset(., !nas)) }
   }
+
   df_obs
 }
 
 variables_layers <- function(df_data, axes, n_vars) {
+
   if (!'DIMRED_VARTYPE' %in% names(df_data)) {
     stop("Can't plot variables wthout a DIMRED_VARTYPE column.")
   }
+
   if (length(axes) != 2) stop("Can't plot variables for more than 2 axes.")
+
   df_var <- subset(df_data, DIMRED_VARTYPE == 'VAR')
 
   lam <- subset(df_data, DIMRED_VARTYPE == 'Explained_variance')[axes] %>%
     unlist
+
   if (length(lam) == 0) {
     lam <- apply(df_data[axes], 2, range) %>% diff %>% as.vector
   }
@@ -88,21 +99,26 @@ variables_layers <- function(df_data, axes, n_vars) {
     cbind.data.frame(varname = df_var$DIMRED_VARNAME)
 
   if (n_vars > 0) {
+
     df_var_subset <- NULL
+
     for (axe in 1:2) {
       df_var_ordered <- df_var[order(abs(df_var[[axe]]), decreasing = TRUE), ]
       df_var_subset %<>% rbind(utils::head(df_var_ordered, n_vars))
     }
+
     df_var <- df_var_subset
   }
 
   map_names <- names(df_var)
   map <- aes(xend = .data[[map_names[1]]], yend = .data[[map_names[2]]])
+
   segments <- geom_segment(map, df_var, x = 0, y = 0, color = 'black',
     arrow = grid::arrow(length = grid::unit(0.03, "npc")))
 
   map <- aes(x = .data[[map_names[1]]], y = .data[[map_names[2]]],
              label = .data$varname)
+
   labels <- ggrepel::geom_label_repel(map, df_var, color = 'black',
     segment.color = 'grey50')
 
@@ -110,6 +126,7 @@ variables_layers <- function(df_data, axes, n_vars) {
 }
 
 combine_axes <- function(i, df_obs) {
+
   cbind(as.list(i), df_obs[, i], stringsAsFactors = FALSE) %>%
     stats::setNames(c('axe1', 'axe2', 'x', 'y'))
 }

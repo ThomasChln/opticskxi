@@ -2,19 +2,55 @@
 % Please edit documentation in R/ensemble_models.R
 \name{ensemble_models}
 \alias{ensemble_models}
-\title{Select models based on ensemble metrics}
+\title{Select best models based on ensemble metrics}
 \usage{
-ensemble_models(l_ensemble_metrics, n_models = 4)
+ensemble_models(
+  df_kxi,
+  n_models = 4,
+  metrics = NULL,
+  metrics_exclude = NULL,
+  model_subsample = c(0.1, 0.2, 0.5),
+  n_models_subsample = 10
+)
 }
 \arguments{
-\item{l_ensemble_metrics}{Output of function ensemble_metrics}
+\item{df_kxi}{Output of opticskxi_pipeline function.
+Dataframe with models' parameters and OPTICS k-Xi results}
 
 \item{n_models}{Number of best models to return}
+
+\item{metrics}{Names of metrics to use. Any of those computed by
+opticskxi_pipeline, e.g. 'sindex', 'ch', 'dunn',
+'dunn2', 'widestgap', 'entropy' etc.
+NULL for all (8).}
+
+\item{metrics_exclude}{Names of metrics to exclude.
+Typically used with metrics = NULL. E.g. 'entropy'.}
+
+\item{model_subsample}{Ratios of best models to consider.}
+
+\item{n_models_subsample}{Number of best models when subsampling.}
 }
 \value{
-List of parameters of best models
+Input object df_kxi subsetted to best models according to ensemble
+        metrics.
 }
 \description{
-Typically we will call ensemble_metrics with varying numbers of ranks to
-consider and this function will sum up the ranks from those calls.
+Call ensemble_metrics with varying numbers of rank thresholds to
+consider and sum up the ranks from those calls.
+}
+\examples{
+data('m_psychwords')
+m_psychwords = m_psychwords[1:200, 1:20]
+
+df_params = expand.grid(n_xi = 4:5, pts = c(5, 10), dist = 'cosine',
+                        dim_red = 'ICA', n_dimred_comp = 5)
+
+df_kxi = psych_kxi_pipeline(m_data, df_params, n_min_clusters = 2)
+
+df_kxi = ensemble_models(df_kxi, n_models = 4,
+                         metrics = c('avg.silwidth', 'dunn'),
+                         model_subsample = c(0.4, 0.6),
+                         n_models_subsample = 4)
+
 }

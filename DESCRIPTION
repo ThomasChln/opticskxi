@@ -1,12 +1,13 @@
 Package: opticskxi
 Title: OPTICS K-Xi Density-Based Clustering
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: person("Thomas", "Charlon", role = c("aut", "cre"), email = "charlon@protonmail.com", comment = c(ORCID = "0000-0001-7497-0470"))
 Description: Density-based clustering methods are well adapted to the clustering of high-dimensional data and enable the discovery of core groups of various shapes despite large amounts of noise. This package provides a novel density-based cluster extraction method, OPTICS k-Xi, and a framework to compare k-Xi models using distance-based metrics to investigate datasets with unknown number of clusters. The vignette first introduces density-based algorithms with simulated datasets, then presents and evaluates the k-Xi cluster extraction method. Finally, the models comparison framework is described and experimented on 2 genetic datasets to identify groups and their discriminating features. The k-Xi algorithm is a novel OPTICS cluster extraction method that specifies directly the number of clusters and does not require fine-tuning of the steepness parameter as the OPTICS Xi method. Combined with a framework that compares models with varying parameters, the OPTICS k-Xi method can identify groups in noisy datasets with unknown number of clusters. Results on summarized genetic data of 1,200 patients are in Charlon T. (2019) <doi:10.13097/archive-ouverte/unige:161795>.
 Imports:
     ggplot2,
     magrittr,
-    rlang
+    rlang,
+    text2vec
 Depends:
     R (>= 3.5.0)
 Suggests:
@@ -23,10 +24,7 @@ Suggests:
     parallel,
     plyr,
     reshape2,
-    stats,
-    testthat,
-    text2vec,
-    utils
+    testthat
 VignetteBuilder: knitr
 License: GPL-3
 Encoding: UTF-8

@@ -1,0 +1,10 @@
+opticskxi_*.tar.gz
+tests/testthat/Rplots.pdf
+vignettes/ensemble_metrics-*
+vignettes/opticskxi-*
+vignettes/*.aux
+vignettes/*.bbl
+vignettes/*.blg
+vignettes/*.log
+vignettes/*.out
+vignettes/*.tex

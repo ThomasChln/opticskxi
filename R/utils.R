@@ -1,27 +1,40 @@
 
+
 if (getRversion() >= "2.15.1") {
-  c('.', 'x', 'rotation', 'sdev', 'DIMRED_VARTYPE', 'value', 'Var2',
-    'dim_red', 'dist', 'n_xi', 'pts', 'n_dimred_comp', 'n_clusters') %>%
-    utils::globalVariables()
+  vars = c('.', 'x', 'rotation', 'sdev', 'DIMRED_VARTYPE', 'value', 'Var2',
+    'dim_red', 'dist', 'n_xi', 'pts', 'n_dimred_comp', 'n_clusters')
+  utils::globalVariables(vars)
 }
 
-#' Print table
+#' Print vignette table
 #'
 #' Print knitr::kable latex table with legend at bottom.
 #'
 #' @param table_obj Table object
 #' @param label     Latex label
-#' @return None
+#' @param caption   Table caption
+#' @return None, side-effect prints a Latex table
 #' @export
-print_table <- function(table_obj, label) {
-  caption = label %>% paste('Contingency table of disease status and k-Xi',
-      'clustering of the', .,
-      'dataset, with standardized Pearson residuals.') %>%
-    paste0('\\caption{\\label{tab:', tolower(label), '}', ., '}')
+print_vignette_table <- function(table_obj, label) {
+
+  caption = if (label == 'Ensemble') {
+
+    'In the first slot of the object returned by $ensemble\\_metrics$, we can investigate which metric voted for each model. Here we have the 10 models with highest sum of metrics ranks thresholded to 50. The top ensemble model was not the top model for any metric (otherwise the rank value would be 50), but was in the top 10 for 4 metrics (rank greater than 40), and was outside of the top 50 for 3 metrics (rank value set to 0).'
+
+  } else {
+
+    paste('Contingency table of disease status and k-Xi',
+          'clustering of the', label,
+          'dataset, with standardized Pearson residuals.')
+  }
+ 
+  caption %<>% paste0('\\caption{\\label{tab:', tolower(label), '}', ., '}')
+
   knitr::kable(table_obj, format = 'latex', booktabs = TRUE) %>%
     c('\\begin{table}[t]', '\\centering', ., caption, '\\end{table}') %>%
     cat(sep = '\n')
 }
+
 
 #' Residuals table
 #'

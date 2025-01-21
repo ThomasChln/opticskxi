@@ -4,61 +4,99 @@
 #' Computes OPTICS k-Xi models based on a parameter grid, binds results in a
 #' data frame, and computes distance based metrics for each model.
 #'
-#' @param m_data    Data matrix
+#' @param m_data Data matrix
 #' @param df_params Parameter grid for the OPTICS k-Xi function call and
 #'                  optional dimension reduction.
 #'                  Required columns: n_xi, pts, dist.
 #'                  Optonal columns: dim_red, n_dim_red.
-#' @param n_cores   Number of cores
+#' @param metrics_dist Distance used for metrics, either euclidean or cosine.
+#' @param max_size_ratio Maximum size ratio of clusters.
+#'                       E.g. for 0.8, if a cluster is larger than 80\% of
+#'                       points it will be removed.
+#' @param n_min_clusters Minimum number of clusters. Ignored if 0.
+#' @param n_cores Number of cores
+#'
 #' @return Input parameter data frame with with results binded in columns
 #'         optics, clusters and metrics.
+#'
 #' @seealso \link{get_best_kxi}, \link{ggplot_kxi_metrics},
 #' \link{gtable_kxi_profiles}
+#'
 #' @examples
+#'
 #' data('hla')
 #' m_hla <- hla[-c(1:2)] %>% scale
+#'
 #' df_params_hla <- expand.grid(n_xi = 3:5, pts = c(20, 30),
 #'   dist = c('manhattan', 'euclidean'))
+#'
 #' df_kxi_hla <- opticskxi_pipeline(m_hla, df_params_hla)
+#'
 #' ggplot_kxi_metrics(df_kxi_hla, n = 8)
 #' gtable_kxi_profiles(df_kxi_hla) %>% plot
 #'
 #' best_kxi_hla <- get_best_kxi(df_kxi_hla, rank = 2)
 #' clusters_hla <- best_kxi_hla$clusters
+#'
 #' fortify_pca(m_hla, sup_vars = data.frame(Clusters = clusters_hla)) %>%
 #'   ggpairs('Clusters', ellipses = TRUE, variables = TRUE)
+#'
 #' @export
 opticskxi_pipeline <- function(m_data,
   df_params = expand.grid(n_xi = 1:10, pts = c(20, 30, 40),
-    dist = c('euclidean', 'abscorrelation'),
-    dim_red = c('identity', 'PCA', 'ICA'), n_dimred_comp = c(5, 10, 20)),
-  n_cores = 1) {
+                          dist = c('euclidean', 'abscorrelation'),
+                          dim_red = c('identity', 'PCA', 'ICA'),
+                          n_dimred_comp = c(5, 10, 20)),
+  metrics_dist = c('euclidean', 'cosine'), max_size_ratio = 1,
+  n_min_clusters = 0, n_cores = 1) {
 
   if (!all(c('n_xi', 'pts', 'dist') %in% names(df_params))) { 
     stop('Missing required columns in parameter grid.')
   }
+  metrics_dist = match.arg(metrics_dist)
 
   # add identity if no dim_red column
   if (!'dim_red' %in% names(df_params)) {
     df_params %<>% cbind(dim_red = 'identity')
   }
-  # get dimred and distance
+
+  # dimred
   uniq_names <- c('dim_red', 'n_dimred_comp')
   df_params <- fetch_dimred(m_data, df_params, uniq_names, n_cores)
+
+  # distance
   uniq_names %<>% c('dist')
-  df_params %<>% derive_column(uniq_names, c('m_dimred', 'dist'), amap::Dist,
-    'm_dist', c('x', 'method'), mc.cores = n_cores)
+  df_params %<>% derive_column(uniq_names, c('m_dimred', 'dist'), dist_matrix,
+    'm_dist', c('data', 'method'), mc.cores = n_cores)
 
   # optics
   uniq_names %<>% c('pts')
   df_params %<>% derive_column(uniq_names, c('m_dist', 'pts'), dbscan::optics,
     'optics', c('x', 'minPts'), mc.cores = n_cores)
+
+  # kxi
   df_params <- fetch_opticskxi(df_params, n_cores)
 
-  # get metrics
-  m_dist <- dist(m_data) %>% as.matrix
+  # max_size_ratio
+  if (max_size_ratio < 1) {
+    df_params$clusters = df_params[c('optics', 'clusters')] %>%
+      t %>% data.frame %>% lapply(rm_huge_clusters, max_size_ratio)
+  }
+
+  df_params$n_clusters = lapply(df_params$clusters, function(clusters) {
+      length(unique(na.omit(clusters)))
+    })
+
+  # n_min_clusters
+  if (n_min_clusters > 0) df_params %<>% subset(n_clusters >= n_min_clusters)
+
+  # metrics
+  m_dist <- switch(metrics_dist, euclidean = dist, cosine_dist)(m_data) %>%
+    as.matrix
+
   df_params$metrics <- parallel::mclapply(df_params$clusters,
-      get_kxi_metrics, m_dist, mc.cores = n_cores)
+                                          get_kxi_metrics, m_dist,
+                                          mc.cores = n_cores)
 
   df_params
 }
@@ -101,11 +139,12 @@ fetch_dimred <- function(m_data, df_params, uniq_names, n_cores) {
 }
 
 .fetch_dimred <- function(m_data, dim_red, n_dimred_comp) {
+
   n_dimred_comp <- as.numeric(n_dimred_comp)
+
   switch(dim_red, identity = m_data,
     PCA = stats::prcomp(m_data)$x[, seq_len(n_dimred_comp)],
     ICA = {
-      set.seed(0)
       fastICA::fastICA(m_data, n_dimred_comp)$S %>%
         `colnames<-`(paste0('IC', seq_len(ncol(.))))
     })

@@ -28,8 +28,18 @@ Typically used with metrics = NULL. E.g. 'entropy'.}
 \item{n_models}{Number of best models to return}
 }
 \value{
-List of metrics matrix and df_params subsetted to best models
+List of metrics' rankings matrix and best models' parameters data
+        frame.
 }
 \description{
 Use models' rankings over several metrics to select best model.
+Several approaches can be taken to sum the models' rankings, and instead of
+summing the ranks of all models over all metrics, we prefer to rank only the
+top models for each metrics, and set 0 to all other. This behavior is
+controlled by the n_top parameter. In a second step, we sum the ranks and
+return only the top models, and this is controlled by the n_models
+parameter.
+The output is a list of the rankings matrix, for quality control purposes,
+and the selected models' parameters data frame, which is used by the
+ensemble_models function.
 }

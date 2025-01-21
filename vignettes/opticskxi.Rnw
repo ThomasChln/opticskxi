@@ -78,7 +78,7 @@ In the \pkg{dbscan} package, by default the euclidean distance is used, with 5 n
     ggpairs(group = 'Clusters')
 
   cowplot::plot_grid(gg_shapes, gg_ds3, nrow = 2,
-    labels = c('(a)', '(b)'), label_x = 0.9)
+                     labels = c('(a)', '(b)'), label_x = 0.9)
 @
 
 \figjss{shape_ds3}{DBSCAN clusterings of various shapes and noise (cluster 0). (a): Multishapes dataset. (b): DS3 dataset.}
@@ -246,7 +246,7 @@ Results show cluster 4 is enriched in Schizophrenia patients ($residual = 3.98$)
   clusters_hla <- best_kxi_hla$clusters
 
   hla$id %<>% `levels<-`(c('Controls', 'Sch. patients'))
-  residuals_table(clusters_hla, hla$id) %>% print_table('HLA')
+  residuals_table(clusters_hla, hla$id) %>% print_vignette_table('HLA')
 @
 
 The groups are finally visualized using PCA dimension reduction, and the contributions of variables are displayed to identify the contributions of the genetic markers. On PCA, the genetic markers most discriminating cluster 4 from other observations are \textit{DQB.a2}, \textit{DQR.a2}, and \textit{DQA.a2} (Figure~\ref{fig:hla_dimred}).
@@ -301,7 +301,8 @@ In the best model, cluster 2 is enriched in Crohn's disease patients ($residual 
   clusters_crohn <- best_kxi_crohn$clusters
 
   crohn$crohn %<>% factor %>% `levels<-`(c('Controls', 'Crohn patients'))
-  residuals_table(clusters_crohn, crohn$crohn) %>% print_table('Crohn')
+  residuals_table(clusters_crohn, crohn$crohn) %>%
+    print_vignette_table('Crohn')
 @
 
 The groups are then visualized using the corresponding dimension reduction, ICA with 4 components, which reveals the hierarchical structure of clusters 1 and 2, discriminated from cluster 3 mostly by the second and third components (Figure~\ref{fig:crohn_dimred}).

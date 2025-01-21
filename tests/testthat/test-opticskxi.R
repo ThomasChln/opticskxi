@@ -18,11 +18,11 @@ test_that('opticskxi_pipeline', test_opticskxi_pipeline())
 best_kxi <- get_best_kxi(kxi, 'bw.ratio')
 
 test_get_best_kxi <- function() {
-  expect_equal(as.vector(table(best_kxi$clusters)), c(28, 49, 72),
+  expect_equal(as.vector(table(best_kxi$clusters)), c(20, 78, 47),
     check.attributes = FALSE)
 
   best_kxi <- get_best_kxi(kxi, 'avg.silwidth', rank = 2)
-  expect_equal(as.vector(table(best_kxi$clusters)), c(100, 49))
+  expect_equal(as.vector(table(best_kxi$clusters)), c(99, 49))
 }
 test_that('get_best_kxi', test_get_best_kxi())
 

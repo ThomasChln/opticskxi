@@ -39,7 +39,8 @@ devtools_check:
 
 vignette:
 	cd vignettes;\
-	R -e "Sweave('opticskxi.Rnw');tools::texi2pdf('opticskxi.tex')"
+	R -e "Sweave('opticskxi.Rnw');tools::texi2pdf('opticskxi.tex')";\
+	R -e "Sweave('ensemble_metrics.Rnw');tools::texi2pdf('ensemble_metrics.tex')"
 
 clean:
 	$(RM) doc.pdf
