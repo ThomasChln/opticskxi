@@ -31,17 +31,6 @@ test_psych_kxi_ensemble_models <- function() {
   expect_true(!all(is.na(best_clusters)))
   expect_true(any(is.na(best_clusters)))
 
-
-  # results very diff when integrating, need to confirm if normal seed variability
-
-  df_kxi = psych_kxi_pipeline_old(m_psych_embeds)
-
-  df_kxi_test = opticskxi_pipeline(m_psych_embeds,
-                                   data.frame(n_xi = 8:11, pts = 15,
-                                              dist = 'cosine', dim_red = 'ICA',
-                                              n_dimred_comp = 15),
-                                   metrics_dist = 'cosine',                          
-                                   max_size_ratio = 0.15, n_min_clusters = 5)
 }
 test_that('psych_kxi_ensemble_models', test_psych_kxi_ensemble_models())
 
