@@ -14,8 +14,8 @@ dist_matrix(data, method = "euclidean", n_cores = 1)
 \item{n_cores}{Number of cores}
 }
 \value{
-Dissimarility symmetric matrix
+Distance symmetric matrix
 }
 \description{
-Dispatch of amap::Dist, cosine_simi, and norm_inprod methods.
+Dispatch of amap::Dist, cosine_dist, and norm_inprod methods.
 }

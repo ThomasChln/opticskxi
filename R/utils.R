@@ -19,7 +19,7 @@ print_vignette_table <- function(table_obj, label) {
 
   caption = if (label == 'Ensemble') {
 
-    'In the first slot of the object returned by $ensemble\\_metrics$, we can investigate which metric voted for each model. Here we have the 10 models with highest sum of metrics ranks thresholded to 50. The top ensemble model was not the top model for any metric (otherwise the rank value would be 50), but was in the top 10 for 4 metrics (rank greater than 40), and was outside of the top 50 for 3 metrics (rank value set to 0).'
+    'In the first slot of the object returned by $ensemble\\_metrics$, we can investigate which metric voted for each model. Here we have the 10 models with highest sum of metrics ranks thresholded to 50. The top ensemble model was not the best model for any metric (otherwise the rank value would be 50), but was in the top 10 for 5 metrics (rank greater than 40), and was outside of the top 50 for 2 metrics (rank value set to 0).'
 
   } else {
 

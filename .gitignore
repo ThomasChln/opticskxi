@@ -8,3 +8,4 @@ vignettes/*.blg
 vignettes/*.log
 vignettes/*.out
 vignettes/*.tex
+vignettes/*.pdf

@@ -15,7 +15,7 @@ cosine_simi(x, y)
 Symmetric numeric similarity matrix
 }
 \description{
-Inputs will be L2 normalized, then matrix multiplied.
+Inputs will be L2 normalized, then matrix multiplied (y is transposed).
 If second input is missing, first input will be recycled, which enables to
 efficiently compute cosine similarities between the rows of a rectangular
 matrix.

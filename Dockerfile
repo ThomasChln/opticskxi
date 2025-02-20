@@ -1,4 +1,4 @@
-from rocker/shiny-verse:4.4.1
+from rocker/shiny-verse:4.4.2
 
 run apt-get update && \
   apt-get install -y --no-install-recommends texlive texlive-latex-recommended texlive-fonts-extra qpdf tidy git

@@ -76,8 +76,9 @@ ensemble_metrics_bootstrap = function(l_ensemble_metrics, n_models = 4) {
   df_metrics = lapply(l_ensemble_metrics, `[[`, 2) %>%
     do.call(rbind.data.frame, .)
 
-  Reduce(paste, df_metrics) %>% table %>% sort %>% tail(n_models) %>% rev %>%
-    names %>% strsplit(' ') %>% lapply(setNames, names(df_metrics))
+  Reduce(paste, df_metrics) %>% table %>% sort(decreasing = TRUE) %>%
+    head(n_models) %>% names %>% strsplit(' ') %>%
+    lapply(setNames, names(df_metrics))
 }
 
 
@@ -124,7 +125,8 @@ ensemble_metrics = function(n_top = 0, df_params, metrics = NULL,
     m_metrics %<>% ifelse(. < 0, 0, .)
   }
 
-  ensemble_idx = m_metrics %>% rowSums %>% order %>% tail(n_models)
+  ensemble_idx = m_metrics %>% rowSums %>% order(decreasing = TRUE) %>%
+    head(n_models)
 
   list(m_metrics[ensemble_idx, ], 
        df_params[ensemble_idx,

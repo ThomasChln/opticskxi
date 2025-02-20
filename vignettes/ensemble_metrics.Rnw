@@ -12,8 +12,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% declarations for jss.cls %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\author{Thomas Charlon, Harvard Medical School\\
-        Tianxi Cai, Harvard Medical School}
+\author{Thomas Charlon\\Harvard Medical School}
 \title{Ensemble Metrics And Models For Density-Based Clustering}
 \Plainauthor{Thomas Charlon}
 \Plaintitle{Ensemble Metrics And Models For Density-Based Clustering}
@@ -29,11 +28,9 @@
 }
 
 \Abstract {
-  The OPTICS k-Xi density-based clustering pipeline computes several distance-based metrics but up to now did not implement any way of merging together their results and making use of ensemble models; it was up to the user to select the most relevant metric or to merge them together. Recently, we applied the pipeline on natural language processing embeddings and the choice of the relevant metric revealed complex and the clusters obtained were unstable. To alleviate this, we implemented ensemble metrics and models in the OPTICS k-Xi pipeline.
+  The OPTICS k-Xi density-based clustering pipeline now integrates ensemble metrics which enable to increase the stability of the clusters and the reproducibility of the results on evaluation datasets. Other improvements have also been implemented as the selection of the cosine distance and a parameter to set a maximum cluster size.
 
-  The ensemble metrics enabled to increase the stability of the clusters and the reproducibility of the results on evaluation datasets. Additionally, we implemented the selection of the cosine distance and a parameter to set a maximum cluster size. One of the limitations of using distance-based metrics with hierarchical density-based clustering is that since some clusters may be nested within others, the minimal distance between all clusters becomes null, and many distance-based metrics rely on this concept of cluster separation. We observed that the main issue came from when points with high OPTICS distance are clustered together in one large cluster that surrounds all others, and that most often having a few small nested clusters would not impact the metrics significantly. We thus implemented a simple restriction on the maximum size of any cluster.
-
-  This vignette will introduce the natural language processing dataset we were investigating and showcase and introduce the new developments of the \pkg{opticskxi} package, with a particular focus on ensemble metrics and models.
+  This vignette showcases and introduce the new developments of the \pkg{opticskxi} package, with a particular focus on ensemble metrics and models.
 }
 \Keywords{Density-based clustering, hierarchical clustering, distance-based metrics, ensemble models}
 
@@ -55,6 +52,7 @@
 
 \SweaveOpts{fig=TRUE, include=FALSE, height=4}
 
+\newpage
 \section{Introduction}
 
 \subsection{Ensemble metrics and models}
@@ -63,53 +61,38 @@
 
   Ensemble models are a family of models that merge results from different clustering models using voting mechanisms. One commonly used method is to have models each vote for the best result, then sum up the votes and select the result with most votes. This voting mechanism can be implemented in several ways and several questions can be considered: should each clustering model vote just for the best result or should all results be ranked ? should similar metrics be incorporated or should each metric be measuring something very different (\textit{e.g.} the between-within ratio and the average silhouette width will often vote for the same model while the Dunn index produces very different results) ?
 
-\subsection{Dataset creation}
+\subsection{Example dataset}
 
-\subsubsection{Center for Suicide Research and Prevention}
+The dataset investigated is the result of applying word2vec on a large corpora of 1,700 mental health related scientific publications. Word2vec has emerged in the mid 2010s as a powerful method for natural language processing and for discovering similarities between concepts in unstructured text~\citep{mikolov2013efficient}. Recent developments in large language models (LLMs) now produce far better results than word2vec on a number of benchmarks, however word2vec still proves useful, especially when combined with LLM results.
 
-The dataset we investigated is the result of applying word2vec on a large corpora of 1,700 mental health related scientific publications, and to be more specific, suicide related.
-
-At the CELEHS laboratory we are part of the Center for Suicide Research and Prevention and are working on building suicide risk prediction models for clinicians to enable them to follow-up in particular with at-risk patients, in particular in two populations of interest: military veterans and teenagers. For that objective, we analyze electronic health records (EHRs) of patients which contain codified data and unstructured text data. Each time a patient visits a hospital, an EHR will be filled with information such as the diagnoses performed or the medications prescribed, which corresponds to the codified data, and with notes and comments from the clinicians justifying why they performed a diagnosis or prescribed a medication, which corresponds to the unstructured text data.
-
-One analysis often performed is to measure the co-occurrence between features and apply pointwise mutual information and singular value decomposition (the curious reader can find further details in the \pkg{kgraph} package vignette "Co-occurrence Matrices and PMI-SVD Embeddings"). This enables to highlight which features often appear together in the data, \textit{e.g.} side-effects of drugs. While the analysis of codified data is well-grounded and has been applied in hospitals for many years, the analysis of unstructured text data has recently gained more traction and results point to the usefulness of incorporating it. One of the challenges however is the large number of features: while in codified data we have a specific set of diagnoses and medications, in unstructured text data we have a much larger vocabulary, especially when considering combinations of several words (\textit{i.e.} n-grams). To analyse unstructured text, biomedical studies usually rely on ontologies which define lists of words or n-grams that were curated by clinicians and are deemed relevant to analyze, as the Unified Medical Language System. However even then, the number of features remains large and calculating co-occurrence matrices is computationally challenging, as the number of concepts found in EHR datasets can be up to 100,000, making the computation of the co-occurrence matrices infeasible in practice. Thus analyses usually also rely on a first step of identifying which project-specific concepts are relevant to analyze, and then select only those to compute co-occurrence matrices from EHRs, \textit{e.g.} up to 20,000.
-
-It is to build such a suicide-specific dictionary of concepts that ensemble metrics were implemented in the \pkg{opticskxi} package.
-
-\subsubsection{Word2vec embeddings}
-
-Word2vec has emerged in the mid 2010s as a powerful method for natural language processing and for discovering similarities between concepts in unstructured text~\citep{mikolov2013efficient}. The co-occurrence matrix method mentioned above is closely related~\citep{levy2014neural}. Recent developments in large language models have produced far better results than word2vec on a number of benchmarks, however word2vec and PMI-SVD results still prove useful, especially when combined with LLM results. We thus focused on fitting a word2vec model based on a project-specific corpora and leveraged the computationally cost-efficient capabilities of word2vec. Additionally, the methods we developed to analyze word2vec embedding matrices can be applied to any kinds of embedding matrices, as LLM-based ones.
-
-The analysis of word2vec embedding matrices answered a broader objective of our work within the CSRP: to extract insights from scientific publications to understand the landscape of knowledge contained in those publications, to be able to build efficient suicide risk models. Additionally, word2vec models trained on EHR data usually benefit from being partly trained on scientific publications~\citep{hong2021clinical}.
-
-\subsubsection{Publications selection, pre-processing, and embeddings computation}
-
-Europe PMC maintains a FTP site enabling to download millions of open-access publications, which is introduced in the vignette of the \pkg{tidypmc} package. After downloading the publications locally, suicide-relevant publications were selected by searching for the pattern 'suicid' (to match both 'suicide' and 'suicidal') in lowercase-transformed titles. A little more than 8,000 publications were identified, and we took a random sample of 1,700 (20\%) as a training dataset.
-
-The full-texts of the 1,700 suicide-related publications were pre-processed by removing irrelevant sections (\textit{e.g.} supplementary data), transforming all text to lowercase, and removing partly the punctuation (but keeping \textit{e.g.} dashes).
+Europe PMC maintains a FTP site enabling to download millions of open-access publications, which is introduced in the vignette of the \pkg{tidypmc} package. After downloading the publications locally, the full-texts of 1,700 publications were pre-processed by removing irrelevant sections (\textit{e.g.} supplementary data), transforming all text to lowercase, and removing partly the punctuation (but keeping \textit{e.g.} dashes). 
 
 The word2vec embeddings were performed with the \pkg{text2vec} package. We applied word2vec on the pre-processed input text with an embedding dimension parameter of 100, and obtained an embedding matrix of more than 30,000 words in rows and 100 embedding dimensions columns. Each word is thus represented by a vector of 100 numeric values, and we want to discover groups of words, \textit{i.e.} related concepts, within the matrix.
 
+\newpage
 \section{Manual evidence of clusters}
 
 \subsection{Single word queries}
 
-Using the embedding matrix, one can select a word, e.g. "medication", fetch the corresponding vector representation, and compare it to all other word representations and return the 50 closest matches. In this dataset, "medication" will return terms "antipsychotic" and "antidepressant", which are examples of mental health medications. This is one example of a group of related concepts, which we call clusters. Similarly, the word "therapy" will return "cbt" and "dbt", acronyms of cognitive behavioral therapy and dialectical behavior therapy.
+Using the embedding matrix, one can select a word, \textit{e.g.} "medication", fetch the corresponding vector representation, and compare it to all other word representations and return the 50 closest matches. In this dataset, "medication" will return terms "antipsychotic" and "antidepressant", which are examples of mental health medications. This is one example of a group of related concepts, which we call clusters. Similarly, the word "therapy" will return "cbt" and "dbt", acronyms of cognitive behavioral therapy and dialectical behavior therapy.
 
 \subsection{Vector operations}
 
-Embedding models are well suited to perform vector operations. A well-known example illustrates this: on an embedding matrix trained on general text, one can take the embedding vector of the word "Paris", subtract the one of "France", and add the one of "Germany", to produce a list of closest matches (e.g. with the cosine similarity) which will include the word "Berlin", indicating the capability of the model to understand language semantics. Written as a vector operation, this becomes "Paris" - "France" + "Germany" = "Berlin", and in natural language one could say "Paris is to France what Berlin is to Germany". This example is particularly interesting because the top matches will also include other capitals as "Moscow", thus suggesting the evidence of a "capitals subspace".
-
-In our dataset, as military veterans are one of our populations of interest, we are particularly interested in post-traumatic stress disorder (PTSD). Hypothetically, one could consider that PTSD may have common symptoms with autism specturm disorder (ASD). By crafting a hypothesis such as "PTSD is to veterans what ASD is to children" and following the patterns of the previous example, the vector operation becomes: "PTSD" - "veterans" + "ASD" = "children"; or alternatively: "PTSD" - "veterans" + "children" = "ASD". We found that these operations produced strikingly well-discriminated clusters: the first produced a list of socio-economic statuses (\textit{e.g.} nationalities, professions, and age-related descriptions as "adult", "children") and the second a list of psychiatric diagnoses (\textit{e.g.} "borderline personality disorder" (BPD) and "major depressive disorder" (MDD). While psychiatric diagnoses were very often numerous in the closest matches of many study-relevant words we investigated, none produced a list as specific to psychiatric diagnoses as this vector operation. Similarly, socio-economic statuses appeared from time to time, but the above vector operation produced a list quasi-solely consituted of socio-economic statuses, and this was never observed previously in our manual explorations.
+Embedding models are well suited to perform vector operations. A well-known example illustrates this: on an embedding matrix trained on general text, one can take the embedding vector of the word "Paris", subtract the one of "France", and add the one of "Germany", to produce a list of closest matches (\textit{e.g.} with the cosine similarity) which will include the word "Berlin", thus indicating the capability of the model to understand language semantics. Written as a vector operation, this becomes "Paris" - "France" + "Germany" = "Berlin", and in natural language one could say "Paris is to France what Berlin is to Germany". One particularly interesting aspect of this example is that the top matches will also include other capitals as "Moscow", thus suggesting the evidence of a "capitals subspace".
 
 Our exploration of single word queries and vector operations thus enabled us to find list of concepts that seemingly constituted clusters. To confirm our hypothesis that these consituted objective clusters, we applied the unsupervised density-based clustering method OPTICS k-Xi.
 
-\section{Density-based clustering with ensemble metrics}
+\subsection{Word2vec embeddings subset}
 
-We first compiled a list of terms based on our manual exploration for which we expected that many would fall into well-separated clusters. We chose 23 single word queries and/or vector operations, each combining additions and/or subtractractions from 1 to 4 words (as the ones mentioned above), and for each of them selected the 50 closest words (\textit{i.e.} with highest cosine similarity). This produced a list of 831 unique words, and we subset our embedding matrix to those words and call OPTICS k-Xi on it.
+We first compiled a list of terms based on our manual exploration for which we expected that many would fall into well-separated clusters. We chose 23 single word queries and/or vector operations, each combining additions and/or subtractractions from 1 to 4 words, and for each of them selected the 50 closest words (\textit{i.e.} with highest cosine similarity). This produced a list of 831 unique words, and we subset our embedding matrix to those words and call OPTICS k-Xi on it.
+
+\newpage
+\section{Density-based clustering with ensemble metrics}
 
 \subsection{Individual metrics}
 
 To demonstrate the advantages of ensemble metrics, we first show the limitations we encounter when using single metrics and compare the results with the ensemble metrics approach. We start by calling the OPTICS k-Xi pipeline with the newly implemented parameters ($metrics\_dist$, $max\_size\_ratio$, $n\_min\_clusters$) and plot the default metric (average silhouette width) (Figure~\ref{fig:silwidth}).
+\newpage
 
 <<silwidth, message = FALSE>>=
 
@@ -130,20 +113,23 @@ To demonstrate the advantages of ensemble metrics, we first show the limitations
 @
 
 \figjss{silwidth}{OPTICS k-Xi best 4 models for average silhouette width, ordered by columns then rows. The OPTICS distance profiles for the top models are quite different. The top profile (upper left) slightly ressembles the characteristic logarithmic profile of mediocre models indicating every points are very distant from each other and the clustering model is not optimal. Although some clusters were found, they are very small.}
+\newpage
 
-Let's now have a look to two other common metrics: the between-within ratio (Figure~\ref{fig:bwratio}) and the Dunn index (Figure~\ref{fig:dunn}).
+Let's now have a look at two other common metrics: the between-within ratio (Figure~\ref{fig:bwratio}) and the Dunn index (Figure~\ref{fig:dunn}).
 
 <<bwratio>>=
   plot(gtable_kxi_profiles(df_kxi, metric = 'bw.ratio'))
 @
 
 \figjss{bwratio}{OPTICS k-Xi best 4 models for between-within ratio, ordered by columns then rows. The top model is the same as for average silhouette width, which is expected since the metrics are similar.}
+\newpage
 
 <<dunn>>=
   plot(gtable_kxi_profiles(df_kxi, metric = 'dunn'))
 @
 
-\figjss{dunn}{OPTICS k-Xi best 4 models for Dunn index, ordered by columns then rows. However, the second model might be more interesting to investigate, as we obtain more clusters and more points are clusters in total.}
+\figjss{dunn}{OPTICS k-Xi best 4 models for Dunn index, ordered by columns then rows. The second model might be more interesting to investigate, as we obtain more clusters and less points fall into the noise (in grey).}
+\newpage
 
 We can also plot the metrics values (Figure~\ref{fig:metricsvals}).
 
@@ -154,6 +140,7 @@ We can also plot the metrics values (Figure~\ref{fig:metricsvals}).
 
 \figjss{metricsvals}{Numeric values of metrics for the top models by average silhouette width. Average silhouette width and between-within ratio have mostly similar results, while the Dunn index results are very different.}
 
+\newpage
 \subsection{Ensemble metrics and models}
 
 The ensemble metrics and models have been developed as two nested modules with their own sets of parameters. 
@@ -170,9 +157,9 @@ The function $ensemble\_metrics$ is the most inner one and will rank the metrics
   \item $n\_models$ Number of best models to return
 \end{itemize}
 
-Several approaches can be taken to sum the ranks of the models. To focus on the best models, we choose to rank only the top models for each metrics and set all other to 0, instead of \textit{e.g.} summing the ranks of all models over all metrics. This behavior is controlled by the $n\_top$ parameter
+Several approaches can be taken to sum the ranks of the models. To focus on the best models, we choose to rank only the top models for each metric and set all other to 0, instead of \textit{e.g.} summing the ranks of all models over all metrics. This behavior is controlled by the $n\_top$ parameter
 
-In a second step, we sum the ranks and return only the top models, and this is controlled by the $n\_models$ parameter. The output is a list of the rankings matrix, for quality control purposes, and the selected models' parameters data frame (Table~\ref{tab:ensemble}) /!\ FIXME wrong row order.
+In a second step, we sum the ranks and return only the top models, and this is controlled by the $n\_models$ parameter. The output is a list of the rankings matrix and the selected models' parameters data frame (Table~\ref{tab:ensemble}).
 
 <<results=tex, fig=FALSE>>=
   ensemble_metrics(n_top = 50, df_params = df_kxi)[[1]] %>%
@@ -182,6 +169,8 @@ In a second step, we sum the ranks and return only the top models, and this is c
 \subsubsection{Bootstrapping on several rank thresholds}
 
 The outer function is $ensemble\_models$ and is meant to be used on metrics objects computed with several different values of $n\_top$. Above we have set $n_top = 50$, here we use 10\%, 20\%, and 50\% of the number of models tested (Figure~\ref{fig:ensemblemetrics}).
+
+The first function returns 3 sets of top 10 models based on varying thresholds, and the second function chooses 4 models with most appearances in the top models. Both steps can produce ties, and in particular the second one. They are currently managed by selecting the last models based on alphabetical ordering using the models' parameters in the dataframe, and this is a behavior that could be improved.
 
 <<ensemblemetrics>>=
 
@@ -205,7 +194,7 @@ We can visualize the clustering with dimensionality reduction. We performed the 
   ggpairs(df_ica, 'Clusters', ellipses = TRUE, axes = 1:4) %>% grid::grid.draw()
 @
 
-\figjss{ica}{ICA dimensionality reduction, with ensemble clusters mapped. Components 2 and 3 have the less cluster overlap overall.}
+\figjss{ica}{ICA dimensionality reduction, with ensemble clusters mapped.}
 
 For comparison, here are the clusters that would've been obtained using the model with best Dunn index metric (Figure~\ref{fig:icadunn}).
 
@@ -220,18 +209,11 @@ For comparison, here are the clusters that would've been obtained using the mode
 
 \figjss{icadunn}{ICA dimensionality reduction, with best Dunn index clusters mapped.}
 
+\newpage
 \section{Conclusions}
 
-This vignette showcased and demonstrated the use of ensemble metrics and models in the \pkg{opticskxi} package. While here the user could've manually investigated a few models and chosen the most appropriate one manually, these methods were also particularly implemented to enable chaining of several passes of OPTICS k-Xi, thus we needed an automated way of choosing the best clustering models.
-
-Further details on the analysis of this dataset within the CSRP and the larger NLP method which makes use of OPTICS k-Xi ensemble metrics and chains several passes will be published in another document and was introduced at R in Medicine 2024 (\url{https://www.youtube.com/watch?v=sj7qYS8oRyc}) and will be published as a research paper in the near future. Curious readers can follow me on social media to keep updated (\url{https://www.linkedin.com/in/thomas-charlon-meng-phd-aba0a3275/} or send me an e-mail for further details.
-
-\newpage
-\section{Acknowledgements}
-
-This work was funded by the CSRP (\url{https://csrp.mgh.harvard.edu/}) and the CELEHS laboratory at Harvard Medical School led by Prof. Tianxi Cai (\url{https://celehs.hms.harvard.edu/}), and was initiated while I was working as a consultant for the non-profit research organization Parse Health (\url{https://parse-health.org/}).
+This vignette showcased and demonstrated the use of ensemble metrics and models in the \pkg{opticskxi} package. While here the user could've manually investigated a few models and chosen the most appropriate one manually, these methods were implemented to enable chaining of several passes of OPTICS k-Xi which required an automated way of choosing the best clustering models.
 
 \bibliography{ensemble_metrics}
 
 \end{document}
-
