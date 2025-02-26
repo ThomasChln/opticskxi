@@ -3,9 +3,9 @@
 #'                     geom_segment ggplot ggplotGrob guides guide_legend
 #'                     labs scale_color_manual stat_ellipse theme theme_bw 
 #' @importFrom rlang .data
-#' @importFrom stats as.dist median na.omit setNames
+#' @importFrom stats as.dist median na.omit setNames var
 #' @importFrom text2vec normalize
-#' @importFrom utils tail
+#' @importFrom utils head tail
 NULL
 
 

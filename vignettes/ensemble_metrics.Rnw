@@ -28,7 +28,9 @@
 }
 
 \Abstract {
-  The OPTICS k-Xi density-based clustering pipeline now integrates ensemble metrics which enable to increase the stability of the clusters and the reproducibility of the results on evaluation datasets. Other improvements have also been implemented as the selection of the cosine distance and a parameter to set a maximum cluster size.
+  The OPTICS k-Xi density-based clustering pipeline now integrates ensemble metrics which enable to increase the stability of the clusters and the reproducibility of the results on evaluation datasets. Up to now, OPTICS k-Xi computed several distance-based metrics but did not implement any way of merging together their results, it was up to the user to select the most relevant metric or to merge them together.
+
+  Recently, we applied the pipeline on natural language processing embeddings and the choice of the relevant metric revealed complex and the clusters were unstable. To alleviate this, we implemented ensemble metrics and models in the OPTICS k-Xi pipeline. Three other improvements have also been implemented: the selection of the cosine distance; a parameter to set a maximum cluster size; and a parameter to select a minimum number of clusters.
 
   This vignette showcases and introduce the new developments of the \pkg{opticskxi} package, with a particular focus on ensemble metrics and models.
 }
@@ -52,47 +54,68 @@
 
 \SweaveOpts{fig=TRUE, include=FALSE, height=4}
 
-\newpage
-\section{Introduction}
+\clearpage
+\section{New developments}
 
 \subsection{Ensemble metrics and models}
 
-  Unsupervised clustering methods usually rely on distance-based metrics such as the between-within ratio, the Dunn index, the average silhouette width, etc. Depending on the use case some may be preferred, \textit{e.g.} the Dunn index will favor clusters' separation, while the between-within ratio will favor a ratio between the clusters' size and the clusters' separation. In some applications however, it is unclear to the analyst which distance-based metric should be preferred, especially in research and knowledge discovery applications in which the clusters are yet to be characterized. In practice, many real-world clustering studies will include several distance-based metrics, although one challenge is that they are hardly comparable.
+ Unsupervised clustering methods usually rely on distance-based metrics such as the between-within ratio, the Dunn index, the average silhouette width, etc. The \pkg{fpc} package provides several distance-based metrics and depending on the use case some may be preferred to others, \textit{e.g.} the Dunn index will favor a minimal distance between all clusters, while the between-within ratio will favor an average ratio between the size of the clusters and the distance between all clusters.
 
-  Ensemble models are a family of models that merge results from different clustering models using voting mechanisms. One commonly used method is to have models each vote for the best result, then sum up the votes and select the result with most votes. This voting mechanism can be implemented in several ways and several questions can be considered: should each clustering model vote just for the best result or should all results be ranked ? should similar metrics be incorporated or should each metric be measuring something very different (\textit{e.g.} the between-within ratio and the average silhouette width will often vote for the same model while the Dunn index produces very different results) ?
+  In some applications however, it is unclear to the analyst which metric should be preferred, especially in research and knowledge discovery applications in which the clusters are yet to be characterized, understood, and investigated. Thus many real-world clustering studies will include several distance-based metrics, although one challenge is that they are hardly comparable.
 
-\subsection{Example dataset}
+  Ensemble models are a family of models that merge results from different clustering models using voting mechanisms. One commonly used method is to have models each vote for the best result, then sum up the votes and select the result with most votes. Thus the results are compared by summing their ranks in each distance-based metric, rather than the actual value of the metric.
 
-The dataset investigated is the result of applying word2vec on a large corpora of 1,700 mental health related scientific publications. Word2vec has emerged in the mid 2010s as a powerful method for natural language processing and for discovering similarities between concepts in unstructured text~\citep{mikolov2013efficient}. Recent developments in large language models (LLMs) now produce far better results than word2vec on a number of benchmarks, however word2vec still proves useful, especially when combined with LLM results.
+  This voting mechanism can be implemented in several ways and several questions can be considered: should each clustering model vote just for the best result or should all results be ranked ? should similar metrics be incorporated or should each metric be measuring something very different (\textit{e.g.} the between-within ratio and the average silhouette width will often vote for the same model while the Dunn index produces very different results) ?
 
-Europe PMC maintains a FTP site enabling to download millions of open-access publications, which is introduced in the vignette of the \pkg{tidypmc} package. After downloading the publications locally, the full-texts of 1,700 publications were pre-processed by removing irrelevant sections (\textit{e.g.} supplementary data), transforming all text to lowercase, and removing partly the punctuation (but keeping \textit{e.g.} dashes). 
+\subsection{Selection of cosine distance}
 
-The word2vec embeddings were performed with the \pkg{text2vec} package. We applied word2vec on the pre-processed input text with an embedding dimension parameter of 100, and obtained an embedding matrix of more than 30,000 words in rows and 100 embedding dimensions columns. Each word is thus represented by a vector of 100 numeric values, and we want to discover groups of words, \textit{i.e.} related concepts, within the matrix.
+Previously, while OPTICS k-Xi enabled to choose from 4 distances, the distance-based metrics were only computed using the euclidean distance, as one distance must be chosen to compute the distance-based metrics to compare clustering models that make use of different distances. It is now possible to choose to perform the distance-based metrics on the cosine distance using the $metrics\_dist$ parameter.
 
-\newpage
-\section{Manual evidence of clusters}
+\subsection{Maximum cluster size}
 
-\subsection{Single word queries}
+One of the limitations of using distance-base metrics with hierarchical density-based clustering is that since some clusters may be nested within others, the minimal distance between all clusters becomes null, and many distance-based metrics rely on this concept of cluster separation. We observed that the main issue came from when points with high OPTICS distance are clustered together in one large cluster that surrounds all others, and that most often having a few small nested clusters would not impact the metrics significantly, and thus we implemented a restriction on the maximum size of a cluster with the $maz\_size\_ratio$ parameter. Another solution that could be investigated in the future would be to incorporate the hierarchical structure within the distance metrics.
+
+\subsection{Minimum number of clusters}
+
+While the OPTICS k-Xi method enables to specify the number of largest distance differences to use to determine clusters, this does not translate directly as the number of clusters, as several parameters interact to produce the final number of clusters (\textit{e.g.} the minimum number of points to produce a neighborhood) and a specific number of clusters will not be reachable in every dataset. When we have prior knowledge about the dataset we may know that we are expecting at least a specific number of clusters, however the models with small number of clusters may have artificially high distance-based metrics compared to models with more clusters. 
+
+Thus we may want to exclude the models with a below threshold threshold number of clusters, and for that we implemented the $n\_min\_clusters$ parameter to set a minimum number of clusters and exclude the models that do not meet the criteria.
+
+\section{Example dataset}
+
+\subsection{Word2vec embeddings of open-access publications}
+
+The dataset investigated is the result of applying word2vec on a large corpora of 1,700 mental health related scientific publications. Word2vec emerged in the mid 2010s as a powerful method for natural language processing and for discovering similarities between concepts in unstructured text~\citep{mikolov2013efficient}. Recent developments in large language models (LLMs) now produce far better results than word2vec on a number of benchmarks, however word2vec still proves useful, especially when performed on study-specific data and combined with pre-trained LLMs.
+
+Europe PMC maintains a FTP site enabling to download open-access publications, which is introduced in the vignette of the \pkg{tidypmc} package. After downloading the publications locally, the full-texts of 1,700 publications were pre-processed by removing irrelevant sections (\textit{e.g.} supplementary data), transforming all text to lowercase, and removing partly the punctuation (but keeping \textit{e.g.} dashes). 
+
+The word2vec embeddings were performed with the \pkg{text2vec} package and applied on the pre-processed input text with an embedding dimension parameter of 100. An embedding matrix of more than 30,000 words in rows and 100 embedding dimensions columns was obtained, in which each word is represented by a vector of 100 numeric values. Our objective here is to discover a landscape of the global knowledge contained in the publications, \textit{i.e.} ontology learning. For that, we want to discover groups of words, \textit{i.e.} related concepts, within the matrix.
+
+Additional details about the dataset were provided at R in Medicine 2024 and the video is available online at \url{https://www.youtube.com/watch?v=sj7qYS8oRyc}.
+
+\clearpage
+\subsection{Manual evidence of clusters}
+
+\subsubsection{Single word queries}
 
 Using the embedding matrix, one can select a word, \textit{e.g.} "medication", fetch the corresponding vector representation, and compare it to all other word representations and return the 50 closest matches. In this dataset, "medication" will return terms "antipsychotic" and "antidepressant", which are examples of mental health medications. This is one example of a group of related concepts, which we call clusters. Similarly, the word "therapy" will return "cbt" and "dbt", acronyms of cognitive behavioral therapy and dialectical behavior therapy.
 
-\subsection{Vector operations}
+\subsubsection{Vector operations}
 
 Embedding models are well suited to perform vector operations. A well-known example illustrates this: on an embedding matrix trained on general text, one can take the embedding vector of the word "Paris", subtract the one of "France", and add the one of "Germany", to produce a list of closest matches (\textit{e.g.} with the cosine similarity) which will include the word "Berlin", thus indicating the capability of the model to understand language semantics. Written as a vector operation, this becomes "Paris" - "France" + "Germany" = "Berlin", and in natural language one could say "Paris is to France what Berlin is to Germany". One particularly interesting aspect of this example is that the top matches will also include other capitals as "Moscow", thus suggesting the evidence of a "capitals subspace".
 
-Our exploration of single word queries and vector operations thus enabled us to find list of concepts that seemingly constituted clusters. To confirm our hypothesis that these consituted objective clusters, we applied the unsupervised density-based clustering method OPTICS k-Xi.
+Our exploration of single word queries and vector operations enabled us to find lists of concepts that seemingly constituted clusters. To confirm our hypothesis that these consituted objective clusters, we applied the unsupervised density-based clustering method OPTICS k-Xi.
 
 \subsection{Word2vec embeddings subset}
 
-We first compiled a list of terms based on our manual exploration for which we expected that many would fall into well-separated clusters. We chose 23 single word queries and/or vector operations, each combining additions and/or subtractractions from 1 to 4 words, and for each of them selected the 50 closest words (\textit{i.e.} with highest cosine similarity). This produced a list of 831 unique words, and we subset our embedding matrix to those words and call OPTICS k-Xi on it.
+We cannot apply OPTICS k-Xi on the global embedding matrix as the number of features is too large. We thus first compiled a list of terms based on our manual exploration for which we expected that many would fall into well-separated clusters. We chose 23 single word queries and/or vector operations, each combining additions and/or subtractractions from 1 to 4 words, and for each of them selected the 50 closest words (\textit{i.e.} with highest cosine similarity). This produced a list of 831 unique words, and we subset our embedding matrix to those words and call OPTICS k-Xi on it. This embedding matrix subset is provided with the \pkg{opticskxi} package. 
 
-\newpage
+\clearpage
 \section{Density-based clustering with ensemble metrics}
 
 \subsection{Individual metrics}
 
-To demonstrate the advantages of ensemble metrics, we first show the limitations we encounter when using single metrics and compare the results with the ensemble metrics approach. We start by calling the OPTICS k-Xi pipeline with the newly implemented parameters ($metrics\_dist$, $max\_size\_ratio$, $n\_min\_clusters$) and plot the default metric (average silhouette width) (Figure~\ref{fig:silwidth}).
-\newpage
+To demonstrate the advantages of ensemble metrics, we first show the limitations we encounter when using single metrics and compare the results with the ensemble metrics approach. We start by calling the OPTICS k-Xi pipeline with the newly implemented parameters ($metrics\_dist$, $max\_size\_ratio$, $n\_min\_clusters$) and plot the default metric (average silhouette width) (Figure~\ref{fig:silwidth}). We newly implemented the selection of the cosine distance, a parameter to set a maximum cluster size, and a parameter to set a minimum number of clusters.
 
 <<silwidth, message = FALSE>>=
 
@@ -113,7 +136,9 @@ To demonstrate the advantages of ensemble metrics, we first show the limitations
 @
 
 \figjss{silwidth}{OPTICS k-Xi best 4 models for average silhouette width, ordered by columns then rows. The OPTICS distance profiles for the top models are quite different. The top profile (upper left) slightly ressembles the characteristic logarithmic profile of mediocre models indicating every points are very distant from each other and the clustering model is not optimal. Although some clusters were found, they are very small.}
-\newpage
+
+
+\clearpage
 
 Let's now have a look at two other common metrics: the between-within ratio (Figure~\ref{fig:bwratio}) and the Dunn index (Figure~\ref{fig:dunn}).
 
@@ -122,14 +147,18 @@ Let's now have a look at two other common metrics: the between-within ratio (Fig
 @
 
 \figjss{bwratio}{OPTICS k-Xi best 4 models for between-within ratio, ordered by columns then rows. The top model is the same as for average silhouette width, which is expected since the metrics are similar.}
-\newpage
+
+
+\clearpage
 
 <<dunn>>=
   plot(gtable_kxi_profiles(df_kxi, metric = 'dunn'))
 @
 
 \figjss{dunn}{OPTICS k-Xi best 4 models for Dunn index, ordered by columns then rows. The second model might be more interesting to investigate, as we obtain more clusters and less points fall into the noise (in grey).}
-\newpage
+
+
+\clearpage
 
 We can also plot the metrics values (Figure~\ref{fig:metricsvals}).
 
@@ -140,7 +169,8 @@ We can also plot the metrics values (Figure~\ref{fig:metricsvals}).
 
 \figjss{metricsvals}{Numeric values of metrics for the top models by average silhouette width. Average silhouette width and between-within ratio have mostly similar results, while the Dunn index results are very different.}
 
-\newpage
+\clearpage
+
 \subsection{Ensemble metrics and models}
 
 The ensemble metrics and models have been developed as two nested modules with their own sets of parameters. 
@@ -166,11 +196,13 @@ In a second step, we sum the ranks and return only the top models, and this is c
     print_vignette_table('Ensemble')
 @
 
+\clearpage
+
 \subsubsection{Bootstrapping on several rank thresholds}
 
-The outer function is $ensemble\_models$ and is meant to be used on metrics objects computed with several different values of $n\_top$. Above we have set $n_top = 50$, here we use 10\%, 20\%, and 50\% of the number of models tested (Figure~\ref{fig:ensemblemetrics}).
+The outer function is $ensemble\_models$ and is meant to be used on metrics objects computed with several different values of $n\_top$. Above we have set $n\_top = 50$, here we use 10\%, 20\%, and 50\% of the number of models tested (Figure~\ref{fig:ensemblemetrics}).
 
-The first function returns 3 sets of top 10 models based on varying thresholds, and the second function chooses 4 models with most appearances in the top models. Both steps can produce ties, and in particular the second one. They are currently managed by selecting the last models based on alphabetical ordering using the models' parameters in the dataframe, and this is a behavior that could be improved.
+The first function returns 3 sets of top 10 models based on varying thresholds, and the second function chooses 4 models with most appearances in the top models. Both steps can produce ties, and in particular the second one. They are managed by ordering the models by increasing $n\_xi$, $pts$ (neighborhood size), and $n\_dimred\_comp$ (number of dimension reduction components) to choose the least complex models possible.
 
 <<ensemblemetrics>>=
 
@@ -182,19 +214,27 @@ The first function returns 3 sets of top 10 models based on varying thresholds, 
 
 \figjss{ensemblemetrics}{OPTICS k-Xi best 4 models for ensemble metrics, ordered by columns then rows. The best model corresponds to the second best Dunn index model.}
 
+\clearpage
+
 \subsection{Visualization with dimensionality reduction}
 
 We can visualize the clustering with dimensionality reduction. We performed the OPTICS k-Xi pipeline with independent component analysis (ICA) and the best model used 10 components. In contrast with principal component analysis (PCA), ICA does not order components and the results on less components will not be a subset of the components in higher dimensions. Still, for ease of visualization and summarization, here we display the clustering results obtained with 10 components on an ICA performed with only 4 components (Figure~\ref{fig:ica}).
 
 <<ica, height = 6>>=
 
-  df_ica = fortify_ica(m_psych_embeds, n.comp = 4,
-                       sup_vars = data.frame(Clusters = df_ensemble_kxi$clusters[[1]]))
+  clusters = df_ensemble_kxi$clusters[[1]]
 
-  ggpairs(df_ica, 'Clusters', ellipses = TRUE, axes = 1:4) %>% grid::grid.draw()
+  set.seed(1)
+  df_ica = fortify_ica(m_psych_embeds, n.comp = 4,
+                       sup_vars = data.frame(Clusters = clusters))
+
+  ggpairs(df_ica, 'Clusters', ellipses = TRUE, axes = 1:4) %>%
+    grid::grid.draw()
 @
 
 \figjss{ica}{ICA dimensionality reduction, with ensemble clusters mapped.}
+
+\clearpage
 
 For comparison, here are the clusters that would've been obtained using the model with best Dunn index metric (Figure~\ref{fig:icadunn}).
 
@@ -202,17 +242,19 @@ For comparison, here are the clusters that would've been obtained using the mode
 
   best_kxi <- get_best_kxi(df_kxi, metric = 'dunn')
 
+  set.seed(1)
   fortify_ica(m_psych_embeds, n.comp = 4,
               sup_vars = data.frame(Clusters = best_kxi$clusters)) %>%
-    ggpairs('Clusters', ellipses = TRUE, axes = 1:4) %>% grid::grid.draw()
+    ggpairs('Clusters', ellipses = TRUE, axes = 1:4) %>%
+    grid::grid.draw()
 @
 
 \figjss{icadunn}{ICA dimensionality reduction, with best Dunn index clusters mapped.}
 
-\newpage
+\clearpage
 \section{Conclusions}
 
-This vignette showcased and demonstrated the use of ensemble metrics and models in the \pkg{opticskxi} package. While here the user could've manually investigated a few models and chosen the most appropriate one manually, these methods were implemented to enable chaining of several passes of OPTICS k-Xi which required an automated way of choosing the best clustering models.
+This vignette showcased and demonstrated the use of ensemble metrics and models in the \pkg{opticskxi} package. While here the user could've manually investigated a few models and chosen the most appropriate one manually, these methods were implemented to enable chaining of several passes of OPTICS k-Xi which required an automated way of choosing the best clustering models. The study of word2vec embeddings on mental health open-access publications was presented at R in Medicine 2024 and the video is available online at \url{https://www.youtube.com/watch?v=sj7qYS8oRyc}.
 
 \bibliography{ensemble_metrics}
 

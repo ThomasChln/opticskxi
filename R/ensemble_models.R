@@ -20,16 +20,18 @@
 #'         metrics.
 #'
 #' @examples
-#' data('m_psychwords')
-#' m_psychwords = m_psychwords[1:200, 1:20]
+#' data('m_psych_embeds')
+#' m_psych_embeds = m_psych_embeds[1:200, 1:20]
 #'
 #' df_params = expand.grid(n_xi = 4:5, pts = c(5, 10), dist = 'cosine',
 #'                         dim_red = 'ICA', n_dimred_comp = 5)
 #'
-#' df_kxi = psych_kxi_pipeline(m_data, df_params, n_min_clusters = 2)
+#' df_kxi = opticskxi_pipeline(m_psych_embeds, df_params,
+#'                             metrics_dist = 'cosine',
+#'                             n_min_clusters = 2, n_cores = 1,
+#'                             metrics = c('avg.silwidth', 'dunn'))
 #'
 #' df_kxi = ensemble_models(df_kxi, n_models = 4,
-#'                          metrics = c('avg.silwidth', 'dunn'),
 #'                          model_subsample = c(0.4, 0.6),
 #'                          n_models_subsample = 4)
 #'
@@ -42,23 +44,16 @@ ensemble_models = function(df_kxi, n_models = 4,
   l_metrics = lapply(model_subsample * nrow(df_kxi), ensemble_metrics, 
                      df_kxi, metrics, metrics_exclude, n_models_subsample)
 
-  best_models = ensemble_metrics_bootstrap(l_metrics, n_models)
+  df_best_params = ensemble_metrics_bootstrap(l_metrics, n_models)
 
-  df_best_params = data.frame()
+  df_models = merge(df_kxi, df_best_params,
+                         by = c('n_xi', 'pts', 'dist', 'dim_red',
+                                'n_dimred_comp'))
 
-  for (best_model in best_models) {
 
-      best_params = as.list(best_model) %>% {
+  ord_idxs = df_models %$% order(n_occur, n_xi, pts, n_dimred_comp)
 
-          subset(df_kxi, n_xi == .$n_xi & pts == .$pts & dist == .$dist &
-                           dim_red == .$dim_red &
-                           n_dimred_comp == .$n_dimred_comp)
-      }
-
-      df_best_params %<>% rbind(best_params)
-  }
-
-  df_best_params
+  df_models[ord_idxs, ]
 }
 
 #' Select models based on ensemble metrics
@@ -76,9 +71,14 @@ ensemble_metrics_bootstrap = function(l_ensemble_metrics, n_models = 4) {
   df_metrics = lapply(l_ensemble_metrics, `[[`, 2) %>%
     do.call(rbind.data.frame, .)
 
-  Reduce(paste, df_metrics) %>% table %>% sort(decreasing = TRUE) %>%
-    head(n_models) %>% names %>% strsplit(' ') %>%
-    lapply(setNames, names(df_metrics))
+  models = Reduce(paste, df_metrics) %>% table %>%
+    sort(decreasing = TRUE) %>%
+    head(n_models)
+ 
+  l_models = names(models) %>% strsplit(' ')
+
+  df_models = do.call(rbind.data.frame, l_models) %>%
+    setNames(names(df_metrics)) %>% cbind(n_occur = as.vector(models))
 }
 
 

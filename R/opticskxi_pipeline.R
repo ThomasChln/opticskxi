@@ -15,6 +15,7 @@
 #'                       points it will be removed.
 #' @param n_min_clusters Minimum number of clusters. Ignored if 0.
 #' @param n_cores Number of cores
+#' @param ... Passed to get_kxi_metrics
 #'
 #' @return Input parameter data frame with with results binded in columns
 #'         optics, clusters and metrics.
@@ -48,7 +49,7 @@ opticskxi_pipeline <- function(m_data,
                           dim_red = c('identity', 'PCA', 'ICA'),
                           n_dimred_comp = c(5, 10, 20)),
   metrics_dist = c('euclidean', 'cosine'), max_size_ratio = 1,
-  n_min_clusters = 0, n_cores = 1) {
+  n_min_clusters = 0, n_cores = 1, ...) {
 
   if (!all(c('n_xi', 'pts', 'dist') %in% names(df_params))) { 
     stop('Missing required columns in parameter grid.')
@@ -96,7 +97,7 @@ opticskxi_pipeline <- function(m_data,
 
   df_params$metrics <- parallel::mclapply(df_params$clusters,
                                           get_kxi_metrics, m_dist,
-                                          mc.cores = n_cores)
+                                          mc.cores = n_cores, ...)
 
   df_params
 }

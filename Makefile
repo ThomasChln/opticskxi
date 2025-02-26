@@ -32,7 +32,7 @@ roxygenise:
 	R -e "roxygen2::roxygenise()"
 
 devtools_test:
-	R -e "devtools::test()"
+	R -e "devtools::test(reporter = testthat::ProgressReporter\$$new(show_praise = FALSE))"
 
 devtools_check:
 	R -e "devtools::check()"

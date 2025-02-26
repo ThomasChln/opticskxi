@@ -12,7 +12,8 @@ opticskxi_pipeline(
   metrics_dist = c("euclidean", "cosine"),
   max_size_ratio = 1,
   n_min_clusters = 0,
-  n_cores = 1
+  n_cores = 1,
+  ...
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ points it will be removed.}
 \item{n_min_clusters}{Minimum number of clusters. Ignored if 0.}
 
 \item{n_cores}{Number of cores}
+
+\item{...}{Passed to get_kxi_metrics}
 }
 \value{
 Input parameter data frame with with results binded in columns

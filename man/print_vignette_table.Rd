@@ -10,8 +10,6 @@ print_vignette_table(table_obj, label)
 \item{table_obj}{Table object}
 
 \item{label}{Latex label}
-
-\item{caption}{Table caption}
 }
 \value{
 None, side-effect prints a Latex table

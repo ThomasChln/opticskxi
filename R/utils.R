@@ -2,7 +2,7 @@
 
 if (getRversion() >= "2.15.1") {
   vars = c('.', 'x', 'rotation', 'sdev', 'DIMRED_VARTYPE', 'value', 'Var2',
-    'dim_red', 'dist', 'n_xi', 'pts', 'n_dimred_comp', 'n_clusters')
+    'dim_red', 'dist', 'n_xi', 'pts', 'n_dimred_comp', 'n_clusters', 'n_occur')
   utils::globalVariables(vars)
 }
 
@@ -12,7 +12,6 @@ if (getRversion() >= "2.15.1") {
 #'
 #' @param table_obj Table object
 #' @param label     Latex label
-#' @param caption   Table caption
 #' @return None, side-effect prints a Latex table
 #' @export
 print_vignette_table <- function(table_obj, label) {
