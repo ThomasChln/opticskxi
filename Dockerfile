@@ -6,7 +6,9 @@ run apt-get update && \
 # use this to save on Gitlab compute minutes, use above to update
 #from thomaschln/knowledgegraphs:main
 
-run R -e "install.packages(c('amap', 'dbscan', 'cowplot', 'fastICA', 'fpc', 'ggrepel', 'gtable', 'knitr', 'plyr', 'reshape2', 'text2vec'))"
+run R -e "install.packages(c('amap', 'dbscan', 'cowplot', 'fastICA', 'fpc', 'ggrepel', 'gtable', 'knitr', 'plyr', 'reshape2'))"
+
+run R -e "install.packages(c('cli', 'R6'))"
 
 add ./ /opticskxi
 

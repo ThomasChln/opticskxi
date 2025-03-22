@@ -39,7 +39,6 @@ stddev_mean <- function(m) {
 }
 
 
-###############################################################################
 #' norm_inprod 
 #'
 #' Normalized inner product with transposed input matrix
@@ -78,10 +77,38 @@ inprod <- function(x, y) {
 #' @export
 cosine_simi = function(x, y) {
 
-  x = text2vec::normalize(x, norm = 'l2')
-  y = if (missing(y)) x else text2vec::normalize(y, norm = 'l2')
+  x = normalize(x, norm = 'l2')
+  y = if (missing(y)) x else normalize(y, norm = 'l2')
 
   x %*% t(y)
 }
 
 cosine_dist = function(x, method) as.dist(1 - cosine_simi(x))
+
+
+#' @name normalize
+#' @title Matrix normalization
+#' @description normalize matrix rows using given norm. Copied from text2vec
+#' @param m \code{matrix} (sparse or dense).
+#' @param norm \code{character} the method used to normalize term vectors
+#' @return normalized matrix
+#' @export
+normalize = function(m, norm = c("l1", "l2", "none")) {
+
+  stopifnot(inherits(m, "matrix") || inherits(m, "sparseMatrix"))
+  norm = match.arg(norm)
+
+  if (norm == "none") return(m)
+
+  norm_vec = switch(norm,
+                    l1 = 1 / rowSums(m),
+                    l2 = 1 / sqrt(rowSums(m ^ 2)))
+
+  # case when sum row elements == 0
+  norm_vec[is.infinite(norm_vec)] = 0
+
+  if(inherits(m, "sparseMatrix"))
+    Matrix::rowScale(m, norm_vec)
+  else
+    m * norm_vec
+}
