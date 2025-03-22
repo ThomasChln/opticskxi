@@ -86,9 +86,10 @@ cosine_simi = function(x, y) {
 cosine_dist = function(x, method) as.dist(1 - cosine_simi(x))
 
 
-#' @name normalize
-#' @title Matrix normalization
-#' @description normalize matrix rows using given norm. Copied from text2vec
+#' Matrix normalization
+#'
+#' Normalize matrix rows using given norm. Copied from text2vec package.
+#'
 #' @param m \code{matrix} (sparse or dense).
 #' @param norm \code{character} the method used to normalize term vectors
 #' @return normalized matrix
@@ -107,8 +108,9 @@ normalize = function(m, norm = c("l1", "l2", "none")) {
   # case when sum row elements == 0
   norm_vec[is.infinite(norm_vec)] = 0
 
-  if(inherits(m, "sparseMatrix"))
+  if (inherits(m, "sparseMatrix")) {
     Matrix::rowScale(m, norm_vec)
-  else
+  } else {
     m * norm_vec
+  }
 }
