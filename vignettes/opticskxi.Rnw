@@ -64,7 +64,7 @@ In the \pkg{dbscan} package, by default the euclidean distance is used, with 5 n
 
 \SweaveOpts{fig=TRUE, include=FALSE, height=5}
 
-<<shape_ds3, message = FALSE>>=
+<<01shape_ds3, message = FALSE>>=
   library('opticskxi')
 
   data('multishapes')
@@ -81,11 +81,11 @@ In the \pkg{dbscan} package, by default the euclidean distance is used, with 5 n
                      labels = c('(a)', '(b)'), label_x = 0.9)
 @
 
-\figjss{shape_ds3}{DBSCAN clusterings of various shapes and noise (cluster 0). (a): Multishapes dataset. (b): DS3 dataset.}
+\figjss{01shape_ds3}{DBSCAN clusterings of various shapes and noise (cluster 0). (a): Multishapes dataset. (b): DS3 dataset.}
 
 However, DBSCAN uses a fixed distance threshold and thus can not detect clusters of varying densities. In this simulated Gaussian data with 2 large clusters and 2 smaller, more dense, clusters, DBSCAN detects either the pair of large or small clusters, depending on the distance threshold, but can not detect all 4 clusters (Figure~\ref{fig:multi_gauss}).
 
-<<multi_gauss, height=4>>=
+<<02multi_gauss, height=4>>=
   n <- 1e3
   set.seed(0)
   multi_gauss <- cbind.data.frame(
@@ -101,7 +101,7 @@ However, DBSCAN uses a fixed distance threshold and thus can not detect clusters
     labels = c('(a)', '(b)'), label_x = .9)
 @
 
-\figjss{multi_gauss}{DBSCAN clustering of hierarchical Gaussian clusters. (a): Detection of large clusters. (b): Detection of small clusters.}
+\figjss{02multi_gauss}{DBSCAN clustering of hierarchical Gaussian clusters. (a): Detection of large clusters. (b): Detection of small clusters.}
 
 \subsection{OPTICS}
 
@@ -126,13 +126,13 @@ OPTICS Xi thus detects clusters of varying densities, possibly hierarchical, alt
 
 \SweaveOpts{height=2}
 
-<<multi_gauss_xi>>=
+<<03multi_gauss_xi>>=
   optics_gauss <- dbscan::optics(multi_gauss, minPts = 30)
   xi_gauss <- dbscan::extractXi(optics_gauss, xi = 0.03)
   ggplot_optics(optics_gauss, groups = xi_gauss$cluster)
 @
 
-\figjss{multi_gauss_xi}{OPTICS profile of the hierarchical Gaussian clusters, colored by OPTICS Xi clustering.}
+\figjss{03multi_gauss_xi}{OPTICS profile of the hierarchical Gaussian clusters, colored by OPTICS Xi clustering.}
 
 \section{OPTICS k-Xi}
 
@@ -148,16 +148,16 @@ The algorithm then stops when the number of clusters has reached the \code{n_xi}
 
 In the hierarchical Gaussian data, OPTICS k-Xi successfully detects the large and small clusters (Figure~\ref{fig:multi_gauss_kxi}). 
 
-<<multi_gauss_kxi>>=
+<<04multi_gauss_kxi>>=
   kxi_gauss <- opticskxi(optics_gauss, n_xi = 4, pts = 100)
   ggplot_optics(optics_gauss, groups = kxi_gauss)
 @
 
-\figjss{multi_gauss_kxi}{OPTICS profile of the hierarchical Gaussian clusters, colored by OPTICS k-Xi clustering.}
+\figjss{04multi_gauss_kxi}{OPTICS profile of the hierarchical Gaussian clusters, colored by OPTICS k-Xi clustering.}
 
 In the multishapes and the DS3 datasets, OPTICS k-Xi also successfully detects the shapes, but the noise is included in the largest cluster (Figure~\ref{fig:kxi_shapes_ds3}).
 
-<<kxi_shapes_ds3, height=4>>=
+<<05kxi_shapes_ds3, height=4>>=
   gg_shapes_optics <- dbscan::optics(multishapes[1:2]) %>%
     ggplot_optics(groups = opticskxi(., n_xi = 5, pts = 30))
   gg_ds3_optics <- dbscan::optics(DS3, minPts = 25) %>%
@@ -166,7 +166,7 @@ In the multishapes and the DS3 datasets, OPTICS k-Xi also successfully detects t
     labels = c('(a)', '(b)'), label_x = .9)
 @
 
-\figjss{kxi_shapes_ds3}{OPTICS profiles colored by OPTICS k-Xi clusterings. (a): Multishapes dataset. (b): DS3 dataset.}
+\figjss{05kxi_shapes_ds3}{OPTICS profiles colored by OPTICS k-Xi clusterings. (a): Multishapes dataset. (b): DS3 dataset.}
 
 \section{Models comparisons by distance-based metrics}
 
@@ -218,7 +218,7 @@ The 8 best models by average silhouette width are first visualized and reveal th
 
 \SweaveOpts{height=3}
 
-<<hla_metrics>>=
+<<06hla_metrics>>=
   data('hla')
   m_hla <- hla[-c(1:2)] %>% scale
   df_params_hla <- expand.grid(n_xi = 3:5, pts = c(20, 30, 40),
@@ -227,15 +227,15 @@ The 8 best models by average silhouette width are first visualized and reveal th
   ggplot_kxi_metrics(df_kxi_hla, n = 8)
 @
 
-\figjss{hla_metrics}{Distance-based metrics of the 8 best k-Xi clusterings of the HLA dataset, ranked by decreasing average silhouette width. All the models use Manhattan or Euclidean distances and half use a \code{pts} parameter of 20.}
+\figjss{06hla_metrics}{Distance-based metrics of the 8 best k-Xi clusterings of the HLA dataset, ranked by decreasing average silhouette width. All the models use Manhattan or Euclidean distances and half use a \code{pts} parameter of 20.}
 
 The OPTICS profiles of the 4 best models are then visualized and reveal that the two best models only differ by their number of clusters, 3 or 4, and that the third and fourth models have hierarchical clusters (Figure~\ref{fig:hla_profiles}).
 
-<<hla_profiles, height=4>>=
+<<07hla_profiles, height=4>>=
   gtable_kxi_profiles(df_kxi_hla) %>% plot
 @
 
-\figjss{hla_profiles}{OPTICS profiles of the 4 best k-Xi clusterings of the HLA dataset, ranked by decreasing average silhouette width. The two best models only differ by their number of clusters, 3 or 4, and the third and fourth models have hierarchical clusters.}
+\figjss{07hla_profiles}{OPTICS profiles of the 4 best k-Xi clusterings of the HLA dataset, ranked by decreasing average silhouette width. The two best models only differ by their number of clusters, 3 or 4, and the third and fourth models have hierarchical clusters.}
 
 The second best model is then selected to investigate the model with 4 clusters. To assess if patients are significantly enriched in each group, standardized Pearson residuals are computed using \code{chisq.test}. One disease is enriched or depleted in one group if the residual is above or below 2, respectively~\citep{friendly1994mosaic}.
 
@@ -251,12 +251,12 @@ Results show cluster 4 is enriched in Schizophrenia patients ($residual = 3.98$)
 
 The groups are finally visualized using PCA dimension reduction, and the contributions of variables are displayed to identify the contributions of the genetic markers. On PCA, the genetic markers most discriminating cluster 4 from other observations are \textit{DQB.a2}, \textit{DQR.a2}, and \textit{DQA.a2} (Figure~\ref{fig:hla_dimred}).
 
-<<hla_dimred>>=
+<<08hla_dimred>>=
   fortify_pca(m_hla, sup_vars = data.frame(Clusters = clusters_hla)) %>%
     ggpairs('Clusters', ellipses = TRUE, variables = TRUE)
 @
 
-\figjss{hla_dimred}{PCA of the HLA dataset colored by k-Xi clustering with 95\% confidence ellipses.}
+\figjss{08hla_dimred}{PCA of the HLA dataset colored by k-Xi clustering with 95\% confidence ellipses.}
 
 \subsection{Crohn's disease patients and relatives}
 
@@ -274,7 +274,7 @@ Since the number of variables is high, dimension reduction methods are applied t
 
 The 8 best models by average silhouette width mostly use the Absolute Pearson or Absolute Correlation distances and 3 clusters (Figure~\ref{fig:crohn_metrics}).
 
-<<crohn_metrics>>=
+<<09crohn_metrics>>=
   data('crohn')
   m_crohn <- crohn[-c(1:6)] %>% scale
   df_params_crohn <- expand.grid(n_xi = 3:5, dim_red = c('PCA', 'ICA'),
@@ -284,15 +284,15 @@ The 8 best models by average silhouette width mostly use the Absolute Pearson or
   ggplot_kxi_metrics(df_kxi_crohn)
 @
 
-\figjss{crohn_metrics}{Distance-based metrics of the 8 best k-Xi clusterings of the Crohn dataset, ranked by decreasing average silhouette width.}
+\figjss{09crohn_metrics}{Distance-based metrics of the 8 best k-Xi clusterings of the Crohn dataset, ranked by decreasing average silhouette width.}
 
 The OPTICS profiles of the 4 best models reveal that all have hierarchical clusters (Figure~\ref{fig:crohn_profiles}).
 
-<<crohn_profiles, height=4>>=
+<<10crohn_profiles, height=4>>=
   gtable_kxi_profiles(df_kxi_crohn) %>% plot
 @
 
-\figjss{crohn_profiles}{OPTICS profiles of the 4 best k-Xi clusterings of the Crohn dataset, ranked by decreasing average silhouette width.}
+\figjss{10crohn_profiles}{OPTICS profiles of the 4 best k-Xi clusterings of the Crohn dataset, ranked by decreasing average silhouette width.}
 
 In the best model, cluster 2 is enriched in Crohn's disease patients ($residual = 3.73$): 46\% of individuals are patients, although only 37\% in the complete dataset; and cluster 3 is enriched in controls ($residual = 3.05$) (Table~\ref{tab:crohn}).
 
@@ -307,23 +307,23 @@ In the best model, cluster 2 is enriched in Crohn's disease patients ($residual 
 
 The groups are then visualized using the corresponding dimension reduction, ICA with 4 components, which reveals the hierarchical structure of clusters 1 and 2, discriminated from cluster 3 mostly by the second and third components (Figure~\ref{fig:crohn_dimred}).
 
-<<crohn_dimred, height=6>>=
+<<11crohn_dimred, height=6>>=
   ica <- fortify_ica(m_crohn, n.comp = 4,
     sup_vars = data.frame(Clusters = clusters_crohn))
   ggpairs(ica, 'Clusters', axes = 1:4, ellipses = TRUE, level = .75) %>%
     plot
 @
 
-\figjss{crohn_dimred}{ICA with 4 axes of the Crohn dataset, colored by k-Xi clustering with 75\% confidence ellipses. Clusters 1 and 2 are hierarchical and are discriminated from cluster 3 mostly by the second and third components.}
+\figjss{11crohn_dimred}{ICA with 4 axes of the Crohn dataset, colored by k-Xi clustering with 75\% confidence ellipses. Clusters 1 and 2 are hierarchical and are discriminated from cluster 3 mostly by the second and third components.}
 
 The dimension reduction visualization is then focused on the second and third components to reveal the variables with strong contributions (Figure~\ref{fig:crohn_dimred_23}). 
 
-<<crohn_dimred_23, height=4>>=
+<<12crohn_dimred_23, height=4>>=
   ggpairs(ica, 'Clusters', axes = 2:3, ellipses = TRUE, variables = TRUE,
     n_vars = 3)
 @
 
-\figjss{crohn_dimred_23}{ICA with 2 axes of the Crohn dataset, colored by k-Xi clustering with 95\% confidence ellipses.}
+\figjss{12crohn_dimred_23}{ICA with 2 axes of the Crohn dataset, colored by k-Xi clustering with 95\% confidence ellipses.}
 
 \section{Conclusions}
 
