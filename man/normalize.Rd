@@ -15,5 +15,5 @@ normalize(m, norm = c("l1", "l2", "none"))
 normalized matrix
 }
 \description{
-normalize matrix rows using given norm. Copied from text2vec
+Normalize matrix rows using given norm. Copied from text2vec package.
 }
